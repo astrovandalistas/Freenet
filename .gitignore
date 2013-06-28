@@ -1,0 +1,6 @@
+oauth*.txt
+secrets*.txt
+*.pyc
+*.db
+festival
+.DS*
