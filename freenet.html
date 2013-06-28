@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<title>Campo de Afinidades Ubícuoas</title>
+    <script type="text/javascript" src="/Users/thiago/Dev/d3.v3/d3.v3.js"></script>
+    <style type="text/css">
+        circle {
+            font-family: sans-serif;
+            stroke: gray;
+            fill: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="viz"></div>
+    <script type="text/javascript">
+
+    var prots = [{name: "AST"},
+    			{name: "CAU"},
+			    {name: "ISO"},
+			    {name: "VLE"}];
+
+	var nets = [{name: "MOLAA", locatio: "Los Angeles, CA"}];
+
+    var sampleSVG = d3.select("#viz")
+        .append("svg")
+        .attr("width", 500)
+        .attr("height", 100);
+    
+    sampleSVG.selectAll("circle")
+    	.data(prots)
+    	.enter()
+    	.append("circle")
+    	.attr("cx", function(d,i){return i*50+10;})
+    	.attr("cy", 50)
+    	.attr("r", 10)
+        .on("mouseover", function(){d3.select(this).style("fill", "aliceblue");})
+        .on("mouseout", function(){d3.select(this).style("fill", "white");});
+    
+    </script>
+</body>
+</html>
