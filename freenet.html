@@ -6,39 +6,177 @@
 	<title>Campo de Afinidades Ubícuoas</title>
     <script type="text/javascript" src="/Users/thiago/Dev/d3.v3/d3.v3.js"></script>
     <style type="text/css">
-        circle {
+        circle.node {
             font-family: sans-serif;
+            stroke-width: 1.5px;
             stroke: gray;
             fill: white;
+        }
+        line.node {
+            font-family: sans-serif;
+            stroke: black;
+            stroke-width: 1.5px;
+        }
+        #graph{
+        	width: 80%;
+        	height: 100%;
+        	position:absolute;
+        	top: 0;
+        	left: 0;
+        }
+        #stream{
+        	width: 20%;
+        	height: 100%;
+        	position: absolute;
+        	top: 0;
+        	right: 0;
         }
     </style>
 </head>
 <body>
-    <div id="viz"></div>
+    <div id="graph"></div>
+    <div id="stream"></div>
+
     <script type="text/javascript">
 
-    var prots = [{name: "AST"},
-    			{name: "CAU"},
-			    {name: "ISO"},
-			    {name: "VLE"}];
+	var nets = [{name: "MOLAA",
+				location: "Los Angeles, CA",
+				desctiption: "MOLAA blah blah blah",
+				image: "http://i.imgur.com/OV5JNjB.jpg",
+				active: true,
+				prots: [{name: "AST",
+						description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg"},
+    					{name: "CAU",
+    					description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg"},
+			    		{name: "ISO",
+			    		description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg"},
+			    		{name: "VLE",
+			    		description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg"}]
+				},
+				{name: "542",
+				location: "Oakland, CA",
+				desctiption: "542 blah blah blah",
+				image: "http://i.imgur.com/OV5JNjB.jpg",
+				active: false,
+				prots: [{name: "AST",
+						description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg"},
+    					{name: "CAU",
+    					description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg"},
+			    		{name: "ISO",
+			    		description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg"},
+			    		{name: "VLE",
+			    		description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg"}]
+				}];
 
-	var nets = [{name: "MOLAA", locatio: "Los Angeles, CA"}];
+	var msgs = ["hello", 
+				"no man. this is a longer message to see what would happen with 140 characters, but it’s hard for me to write that much. We’ll never know.", 
+				"make some noise", 
+				"unbelibubble"];
 
-    var sampleSVG = d3.select("#viz")
+	var nodes = [],
+		links = [];
+
+	updateNodeAndLinkArrays();
+
+    var graphSVG = d3.select("#graph")
         .append("svg")
         .attr("width", 500)
-        .attr("height", 100);
-    
-    sampleSVG.selectAll("circle")
-    	.data(prots)
-    	.enter()
-    	.append("circle")
-    	.attr("cx", function(d,i){return i*50+10;})
-    	.attr("cy", 50)
-    	.attr("r", 10)
-        .on("mouseover", function(){d3.select(this).style("fill", "aliceblue");})
-        .on("mouseout", function(){d3.select(this).style("fill", "white");});
-    
+        .attr("height", 200);
+
+    var stream = d3.select("#stream");
+
+    stream.selectAll("p")
+    	.data(msgs)
+    	.enter().append("p")
+    	.text(function(d){return d;});
+
+	updateGraphSVG();
+
+    var theForce = d3.layout.force();
+
+	theForce.nodes(nodes)
+		.links(links)
+		.linkDistance(50)
+		.charge(-100)
+		.size([300,200])
+		.on("tick",tick)
+		.start();
+
+	function tick(){
+		// TODO: color
+		graphSVG.selectAll("line.node")
+			.attr("x1", function(d){return d.source.x;})
+			.attr("y1", function(d){return d.source.y;})
+			.attr("x2", function(d){return d.target.x;})
+			.attr("y2", function(d){return d.target.y;});
+		graphSVG.selectAll("circle.node")
+			.attr("cx", function(d){return d.x;})
+			.attr("cy", function(d){return d.y;})
+			.attr("r", function(d){return ("prots" in d)?20:10});
+	}
+
+	function updateNodeAndLinkArrays() {
+		nodes = []; 
+		links = [];
+		for (var n in nets){
+			var s = nodes.length;
+			nodes.push(nets[n]);
+			for (var p in nets[n].prots){
+				var t = nodes.length;
+				nodes.push(nets[n].prots[p]);
+				links.push({source:s, target:t});
+			}
+		}
+	}
+
+	function updateGraphSVG() {
+		graphSVG.selectAll("line").remove();
+		graphSVG.selectAll("circle").remove();
+		graphSVG.selectAll("line")
+			.data(links)
+			.enter().append("svg:line")
+			.attr("class", "node");
+		graphSVG.selectAll("circle")
+			.data(nodes)
+			.enter().append("svg:circle")
+			.attr("class", "node")
+			.on("click", nodeClick);
+	}
+
+	function nodeClick(n){
+		// closing net
+		if(n.prots){
+			n._prots = n.prots;
+			n.prots = null;
+			// TODO: check and close floaty
+		}
+		// re-opening net
+		else if("prots" in n){
+			n.prots = n._prots;
+			n._prots = null;
+			// TODO: setup floaty
+		}
+		else{
+			// TODO: setup floaty
+		}
+		// update node arrays
+		updateNodeAndLinkArrays();
+		// update svg
+		updateGraphSVG();
+		// update graph
+		theForce.nodes(nodes)
+			.links(links)
+			.start();
+	}
+
     </script>
 </body>
 </html>
