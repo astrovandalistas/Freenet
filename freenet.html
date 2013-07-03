@@ -19,23 +19,58 @@
         }
         #graph{
         	width: 80%;
-        	height: 100%;
-        	position:absolute;
-        	top: 0;
-        	left: 0;
+        	float: top;
+        	background-color: #A0AFA0;
         }
         #stream{
-        	width: 20%;
-        	height: 100%;
-        	position: absolute;
-        	top: 0;
-        	right: 0;
+        	width: 80%;
+        	float: top;
+        	background-color: #FFFFFF;
+        	margin-top: 10px;
+        }
+        #stream-title{
+        	width: 100%;
+        	font-size: 18pt;
+        	font-weight: bold;
+        	background-color: #AF6060;
+        	border-bottom-width: 1px;
+        	border-bottom-color: black;
+        	border-bottom-style: solid;
+        }
+        #stream-messages{
+        	width: 100%;
+        	background-color: #AF6060;
+        }
+        #stream-message{
+        	width: 100%;
+        	font-size: 12pt;
+        	font-weight: normal;
+        	background-color: #AF6060;
+        	border-bottom-width: 1px;
+        	border-bottom-color: black;
+        	border-bottom-style: solid;
+        }
+        #stream-footer{
+        	width: 100%;
+        	text-align: center;
+        	background-color: #AF6060;
+        }
+        #info{
+        	width: 80%;
+        	float: top;
+        	background-color: #A0A0AF;
+        	margin-top: 10px;
         }
     </style>
 </head>
-<body>
+<body style="background-color:black">
     <div id="graph"></div>
-    <div id="stream"></div>
+    <div id="info"></div>
+    <div id="stream">
+        <div id="stream-title"></div>
+        <div id="stream-messages"></div>
+        <div id="stream-footer"></div>
+    </div>
 
     <script type="text/javascript">
 
@@ -44,7 +79,7 @@
 				desctiption: "MOLAA blah blah blah",
 				image: "http://i.imgur.com/OV5JNjB.jpg",
 				active: true,
-				prots: [{name: "AST",
+				_prots: [{name: "AST",
 						description: "ohh lalalala",
 						image: "http://i.imgur.com/OV5JNjB.jpg"},
     					{name: "CAU",
@@ -62,7 +97,7 @@
 				desctiption: "542 blah blah blah",
 				image: "http://i.imgur.com/OV5JNjB.jpg",
 				active: false,
-				prots: [{name: "AST",
+				_prots: [{name: "AST",
 						description: "ohh lalalala",
 						image: "http://i.imgur.com/OV5JNjB.jpg"},
     					{name: "CAU",
@@ -91,11 +126,17 @@
         .attr("width", 500)
         .attr("height", 200);
 
-    var stream = d3.select("#stream");
+    d3.select("#stream-title").text("Messages");
+	d3.select("#stream-footer").insert("img")
+		.attr("src","http://i.imgur.com/OV5JNjB.jpg")
+		.attr("width","100px");
 
-    stream.selectAll("p")
+
+    var stream = d3.select("#stream-messages");
+    stream.selectAll("div")
     	.data(msgs)
-    	.enter().append("p")
+    	.enter().append("div")
+    	.attr("id","stream-message")
     	.text(function(d){return d;});
 
 	updateGraphSVG();
@@ -120,7 +161,7 @@
 		graphSVG.selectAll("circle.node")
 			.attr("cx", function(d){return d.x;})
 			.attr("cy", function(d){return d.y;})
-			.attr("r", function(d){return ("prots" in d)?20:10});
+			.attr("r", function(d){return (("prots" in d)||("_prots" in d))?20:10});
 	}
 
 	function updateNodeAndLinkArrays() {
@@ -156,16 +197,19 @@
 		if(n.prots){
 			n._prots = n.prots;
 			n.prots = null;
-			// TODO: check and close floaty
+			// close info bar
+			d3.select("#info").text("");
 		}
 		// re-opening net
-		else if("prots" in n){
+		else if(("prots" in n)||("_prots" in n)){
 			n.prots = n._prots;
 			n._prots = null;
-			// TODO: setup floaty
+			// setup info bar
+			d3.select("#info").text("LocalNet!");
 		}
 		else{
-			// TODO: setup floaty
+			// setup prototype info bar
+			d3.select("#info").text("Prototype!");
 		}
 		// update node arrays
 		updateNodeAndLinkArrays();
