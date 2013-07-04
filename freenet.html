@@ -6,84 +6,73 @@
 	<title>Campo de Afinidades Ubícuoas</title>
     <script type="text/javascript" src="/Users/thiago/Dev/d3.v3/d3.v3.js"></script>
     <style type="text/css">
-        circle.node {
-            font-family: sans-serif;
+    	#graph, #stream, #info, #stream-message {
+        	background-color: #EEE5DE;
+        	border-width: 1px;
+    	}
+    	#stream-message {
+        	border-bottom-right-radius: 0px;
+        	border-bottom-left-radius: 0px;
+        	border-bottom-color: #E0E0E0;
+        	border-bottom-width: 1px;
+        	border-bottom-style: solid;
+    	}
+        circle.node{
             stroke-width: 1.5px;
             stroke: gray;
+            fill: black;
+        }
+        text.node{
+            font-family: sans-serif;
+            font-size: 15px;
+            text-anchor: middle;
+            alignment-baseline: central;
             fill: white;
         }
-        line.node {
-            font-family: sans-serif;
-            stroke: black;
+        line.node{
             stroke-width: 1.5px;
+            stroke: black;
         }
         #graph{
-        	width: 80%;
-        	margin: 0 auto;
-        	border-radius: 8px;
-        	border-width: 2px;
+        	width: 74%;
+        	float: left;
         	border-color: black;
         	border-style: solid;
-        	background-color: #FFFFFF;
         }
         #stream{
-        	width: 80%;
-        	margin: 0 auto;
-        	border-radius: 8px;
-        	margin-top: 10px;
-        	border-width: 2px;
+        	width: 24%;
+        	margin-left: 10px;
+        	float: left;
         	border-color: black;
         	border-style: solid;
-        	background-color: #FFFFFF;
         }
         #info{
-        	width: 80%;
-        	margin: 0 auto;
-        	border-radius: 8px;
-        	border-width: 2px;
+        	width: 74%;
+        	float: left;
         	border-color: black;
         	border-style: solid;
-        	background-color: #FFFFFF;
-        	margin-top: 10px;
-        }
-        #stream-title{
-        	width: 100%;
-        	font-size: 18pt;
-        	font-weight: bold;
-        	border-top-right-radius: 8px;
-        	border-top-left-radius: 8px;
-        	background-color: #FFFFFF;
-        	border-bottom-width: 1px;
-        	border-bottom-color: #EFEFEF;
-        	border-bottom-style: solid;
         }
         #stream-messages{
         	width: 100%;
-        	background-color: #AF6060;
         }
         #stream-message{
-        	width: 100%;
+        	padding-left: 2px;
+        	padding-right: 2px;
+        	padding-top: 10px;
+        	padding-bottom: 10px;
         	font-size: 12pt;
         	font-weight: normal;
-        	background-color: #FFFFFF;
-        	border-bottom-width: 1px;
-        	border-bottom-color: #EFEFEF;
-        	border-bottom-style: solid;
         }
         #stream-footer{
-        	width: 100%;
         	text-align: center;
         	border-bottom-right-radius: 8px;
         	border-bottom-left-radius: 8px;
-        	background-color: #FFFFFF;
         }
     </style>
 </head>
-<body style="background-color: #D5D5D5">
+<body style="background-color: #FFFFFF">
     <div id="graph"></div>
-    <div id="info"></div>
     <div id="stream">
-        <div id="stream-title"></div>
         <div id="stream-messages"></div>
         <div id="stream-footer"></div>
     </div>
@@ -135,18 +124,22 @@
 	var nodes = [],
 		links = [];
 
+	var selectedNet = null,
+		selectedPrototype = null;
+
 	updateNodeAndLinkArrays();
 
     var graphSVG = d3.select("#graph")
         .append("svg")
-        .attr("width", 800)
-        .attr("height", 200);
+        .attr("width", document.getElementById("graph").offsetWidth)
+        .attr("height", 500);
 
-    d3.select("#stream-title").text("Messages");
+	d3.select("#stream")
+		.style("height",document.getElementById("graph").offsetHeight-2+"px");
+
 	d3.select("#stream-footer").insert("img")
-		.attr("src","http://i.imgur.com/OV5JNjB.jpg")
-		.attr("height","50px");
-
+		.attr("src","http://i.imgur.com/wbExTgx.png")
+		.attr("height","100px");
 
     var stream = d3.select("#stream-messages");
     stream.selectAll("div")
@@ -161,14 +154,18 @@
 
 	theForce.nodes(nodes)
 		.links(links)
-		.linkDistance(50)
-		.charge(-100)
-		.size([800,200])
+		.linkDistance(200)
+		.charge(-800)
+		.size([graphSVG.attr("width"),graphSVG.attr("height")])
 		.on("tick",tick)
 		.start();
 
+	window.onresize = function(event) {
+		graphSVG.attr("width",document.getElementById("graph").offsetWidth);
+		theForce.size([graphSVG.attr("width"),graphSVG.attr("height")]).start();
+	};
+
 	function tick(){
-		// TODO: color
 		graphSVG.selectAll("line.node")
 			.attr("x1", function(d){return d.source.x;})
 			.attr("y1", function(d){return d.source.y;})
@@ -177,7 +174,26 @@
 		graphSVG.selectAll("circle.node")
 			.attr("cx", function(d){return d.x;})
 			.attr("cy", function(d){return d.y;})
-			.attr("r", function(d){return (("prots" in d)||("_prots" in d))?20:10});
+			.attr("r", function(d){return ("_prots" in d)?50:30});
+		graphSVG.selectAll("text.node")
+			.attr("x",function(d){return d.x;})
+			.attr("y",function(d){return d.y;});
+		if(selectedNet){
+			graphSVG.selectAll("circle.selectedNet")
+				.attr("cx",selectedNet.x)
+				.attr("cy",selectedNet.y)
+				.attr("r",70)
+				.style("fill","none")
+				.style("stroke","black");
+		}
+		if(selectedPrototype){
+			graphSVG.selectAll("circle.selectedPrototype")
+				.attr("cx",selectedPrototype.x)
+				.attr("cy",selectedPrototype.y)
+				.attr("r",42)
+				.style("fill","none")
+				.style("stroke","black");
+		}
 	}
 
 	function updateNodeAndLinkArrays() {
@@ -195,39 +211,63 @@
 	}
 
 	function updateGraphSVG() {
-		graphSVG.selectAll("line").remove();
-		graphSVG.selectAll("circle").remove();
-		graphSVG.selectAll("line")
+		graphSVG.selectAll("line.node").remove();
+		graphSVG.selectAll("g").remove();
+		graphSVG.selectAll("line.node")
 			.data(links)
 			.enter().append("svg:line")
 			.attr("class", "node");
-		graphSVG.selectAll("circle")
+		var ngs = graphSVG.selectAll("circle.node")
 			.data(nodes)
-			.enter().append("svg:circle")
-			.attr("class", "node")
+			.enter().append("g")
 			.on("click", nodeClick);
+		ngs.append("svg:circle")
+			.attr("class", "node")
+		ngs.append("text")
+			.attr("class", "node")
+			.text(function(d){return d.name;});
 	}
 
 	function nodeClick(n){
-		var txt = "";
-		// closing net
-		if(n.prots){
-			n._prots = n.prots;
-			n.prots = null;
+		// clicked a net
+		if("_prots" in n){
+			// things that always get updated
+			selectedPrototype = null;
+			graphSVG.selectAll("circle.selectedPrototype").remove();
+			graphSVG.selectAll("circle.selectedNet").remove();
+
+			// close what's open
+			if(selectedNet){
+				selectedNet._prots = selectedNet.prots;
+				selectedNet.prots = null;
+			}
+
+			// if only closing, de-select node
+			if(n == selectedNet){
+				selectedNet = null;
+			}
+			// else open new
+			else{
+				graphSVG.append("circle")
+					.attr("class","selectedNet");
+				selectedNet = n;
+				selectedNet.prots = selectedNet._prots;
+				selectedNet._prots = null;
+			}
 		}
-		// re-opening net
-		else if(("prots" in n)||("_prots" in n)){
-			n.prots = n._prots;
-			n._prots = null;
-			// setup network info bar
-			txt = n.name+" "+n.description;
-		}
+		// clicked a prototypes
 		else{
-			// setup prototype info bar
-			txt = n.name+" "+n.description;
+			// if already selected, de-select node
+			selectedPrototype = (n == selectedPrototype)?null:n;
+			if(selectedPrototype){
+				graphSVG.append("circle")
+					.attr("class","selectedPrototype");
+			}
+			else{
+				graphSVG.selectAll("circle.selectedPrototype").remove();
+			}
 		}
-		// put text in info bar
-		d3.select("#info").text(txt);
+
 		// update node arrays
 		updateNodeAndLinkArrays();
 		// update svg
