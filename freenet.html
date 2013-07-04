@@ -170,9 +170,14 @@
 		.links(links)
 		.linkDistance(50)
 		.charge(-100)
-		.size([800,200])
+		.size([graphSVG.attr("width"),graphSVG.attr("height")])
 		.on("tick",tick)
 		.start();
+
+	window.onresize = function(event) {
+		graphSVG.attr("width",document.getElementById("graph").offsetWidth);
+		theForce.size([graphSVG.attr("width"),graphSVG.attr("height")]).start();
+	};
 
 	function tick(){
 		// TODO: color
