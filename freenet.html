@@ -71,19 +71,10 @@
         	border-bottom-right-radius: 8px;
         	border-bottom-left-radius: 8px;
         }
-        #info-text{
-        	width: 100%;
-        	position: absolute;
-        	top: 0;
-        	left: 0;
-        }
     </style>
 </head>
 <body style="background-color: #E0E0E0">
     <div id="graph"></div>
-    <div id="info">
-        <div id="info-text"></div>
-    </div>
     <div id="stream">
         <div id="stream-title"></div>
         <div id="stream-messages"></div>
@@ -143,11 +134,6 @@
         .append("svg")
         .attr("width", document.getElementById("graph").offsetWidth)
         .attr("height", 400);
-
-    var infoSVG = d3.select("#info")
-        .append("svg")
-        .attr("width", document.getElementById("info").offsetWidth)
-        .attr("height", 0);
 
     d3.select("#stream-title").text("Messages");
 	d3.select("#stream-footer").insert("img")
@@ -254,17 +240,6 @@
 			// setup prototype info bar
 			txt = n.name+" "+n.description;
 		}
-		// put text in info bar
-		infoSVG.transition()
-        	.attr("height", 100)
-        	.duration(1000)
-        	.each("end", function(){
-        		d3.select("#info-text").text(txt);
-        		d3.select(this)
-        			.transition()
-        			.attr("height",0)
-        			.duration(500);
-        	});
 		// update node arrays
 		updateNodeAndLinkArrays();
 		// update svg
