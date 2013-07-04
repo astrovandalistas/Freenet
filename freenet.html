@@ -141,12 +141,12 @@
 
     var graphSVG = d3.select("#graph")
         .append("svg")
-        .attr("width", 800)
+        .attr("width", document.getElementById("graph").offsetWidth)
         .attr("height", 200);
 
     var infoSVG = d3.select("#info")
         .append("svg")
-        .attr("width", 800)
+        .attr("width", document.getElementById("info").offsetWidth)
         .attr("height", 0);
 
     d3.select("#stream-title").text("Messages");
