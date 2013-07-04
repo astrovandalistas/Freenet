@@ -19,12 +19,30 @@
         }
         #graph{
         	width: 80%;
-        	float: top;
-        	background-color: #A0AFA0;
+        	margin: 0 auto;
+        	border-radius: 8px;
+        	border-width: 2px;
+        	border-color: black;
+        	border-style: solid;
+        	background-color: #FFFFFF;
         }
         #stream{
         	width: 80%;
-        	float: top;
+        	margin: 0 auto;
+        	border-radius: 8px;
+        	margin-top: 10px;
+        	border-width: 2px;
+        	border-color: black;
+        	border-style: solid;
+        	background-color: #FFFFFF;
+        }
+        #info{
+        	width: 80%;
+        	margin: 0 auto;
+        	border-radius: 8px;
+        	border-width: 2px;
+        	border-color: black;
+        	border-style: solid;
         	background-color: #FFFFFF;
         	margin-top: 10px;
         }
@@ -32,9 +50,11 @@
         	width: 100%;
         	font-size: 18pt;
         	font-weight: bold;
-        	background-color: #AF6060;
+        	border-top-right-radius: 8px;
+        	border-top-left-radius: 8px;
+        	background-color: #FFFFFF;
         	border-bottom-width: 1px;
-        	border-bottom-color: black;
+        	border-bottom-color: #EFEFEF;
         	border-bottom-style: solid;
         }
         #stream-messages{
@@ -45,25 +65,21 @@
         	width: 100%;
         	font-size: 12pt;
         	font-weight: normal;
-        	background-color: #AF6060;
+        	background-color: #FFFFFF;
         	border-bottom-width: 1px;
-        	border-bottom-color: black;
+        	border-bottom-color: #EFEFEF;
         	border-bottom-style: solid;
         }
         #stream-footer{
         	width: 100%;
         	text-align: center;
-        	background-color: #AF6060;
-        }
-        #info{
-        	width: 80%;
-        	float: top;
-        	background-color: #A0A0AF;
-        	margin-top: 10px;
+        	border-bottom-right-radius: 8px;
+        	border-bottom-left-radius: 8px;
+        	background-color: #FFFFFF;
         }
     </style>
 </head>
-<body style="background-color:black">
+<body style="background-color: #D5D5D5">
     <div id="graph"></div>
     <div id="info"></div>
     <div id="stream">
@@ -76,7 +92,7 @@
 
 	var nets = [{name: "MOLAA",
 				location: "Los Angeles, CA",
-				desctiption: "MOLAA blah blah blah",
+				description: "MOLAA blah blah blah",
 				image: "http://i.imgur.com/OV5JNjB.jpg",
 				active: true,
 				_prots: [{name: "AST",
@@ -94,7 +110,7 @@
 				},
 				{name: "542",
 				location: "Oakland, CA",
-				desctiption: "542 blah blah blah",
+				description: "542 blah blah blah",
 				image: "http://i.imgur.com/OV5JNjB.jpg",
 				active: false,
 				_prots: [{name: "AST",
@@ -123,13 +139,13 @@
 
     var graphSVG = d3.select("#graph")
         .append("svg")
-        .attr("width", 500)
+        .attr("width", 800)
         .attr("height", 200);
 
     d3.select("#stream-title").text("Messages");
 	d3.select("#stream-footer").insert("img")
 		.attr("src","http://i.imgur.com/OV5JNjB.jpg")
-		.attr("width","100px");
+		.attr("height","50px");
 
 
     var stream = d3.select("#stream-messages");
@@ -147,7 +163,7 @@
 		.links(links)
 		.linkDistance(50)
 		.charge(-100)
-		.size([300,200])
+		.size([800,200])
 		.on("tick",tick)
 		.start();
 
@@ -193,24 +209,25 @@
 	}
 
 	function nodeClick(n){
+		var txt = "";
 		// closing net
 		if(n.prots){
 			n._prots = n.prots;
 			n.prots = null;
-			// close info bar
-			d3.select("#info").text("");
 		}
 		// re-opening net
 		else if(("prots" in n)||("_prots" in n)){
 			n.prots = n._prots;
 			n._prots = null;
-			// setup info bar
-			d3.select("#info").text("LocalNet!");
+			// setup network info bar
+			txt = n.name+" "+n.description;
 		}
 		else{
 			// setup prototype info bar
-			d3.select("#info").text("Prototype!");
+			txt = n.name+" "+n.description;
 		}
+		// put text in info bar
+		d3.select("#info").text(txt);
 		// update node arrays
 		updateNodeAndLinkArrays();
 		// update svg
