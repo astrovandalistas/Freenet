@@ -6,13 +6,25 @@
 	<title>Campo de Afinidades Ubícuoas</title>
     <script type="text/javascript" src="/Users/thiago/Dev/d3.v3/d3.v3.js"></script>
     <style type="text/css">
-        circle.node {
+    	#graph, #stream, #info, #stream-title, #stream-message {
+        	background-color: #FFFFFF;
+        	border-radius: 8px;
+        	border-width: 2px;
+    	}
+    	#stream-title, #stream-message {
+        	border-bottom-right-radius: 0px;
+        	border-bottom-left-radius: 0px;
+        	border-bottom-color: #E0E0E0;
+        	border-bottom-width: 1px;
+        	border-bottom-style: solid;
+    	}
+        circle.node{
             font-family: sans-serif;
             stroke-width: 1.5px;
             stroke: gray;
             fill: white;
         }
-        line.node {
+        line.node{
             font-family: sans-serif;
             stroke: black;
             stroke-width: 1.5px;
@@ -20,31 +32,22 @@
         #graph{
         	width: 80%;
         	margin: 0 auto;
-        	border-radius: 8px;
-        	border-width: 2px;
         	border-color: black;
         	border-style: solid;
-        	background-color: #FFFFFF;
         }
         #stream{
         	width: 80%;
         	margin: 0 auto;
-        	border-radius: 8px;
         	margin-top: 10px;
-        	border-width: 2px;
         	border-color: black;
         	border-style: solid;
-        	background-color: #FFFFFF;
         }
         #info{
         	width: 80%;
         	margin: 0 auto;
-        	border-radius: 8px;
-        	border-width: 2px;
+        	margin-top: 10px;
         	border-color: black;
         	border-style: solid;
-        	background-color: #FFFFFF;
-        	margin-top: 10px;
         }
         #stream-title{
         	width: 100%;
@@ -52,36 +55,31 @@
         	font-weight: bold;
         	border-top-right-radius: 8px;
         	border-top-left-radius: 8px;
-        	background-color: #FFFFFF;
-        	border-bottom-width: 1px;
-        	border-bottom-color: #EFEFEF;
-        	border-bottom-style: solid;
         }
         #stream-messages{
         	width: 100%;
-        	background-color: #AF6060;
         }
         #stream-message{
         	width: 100%;
         	font-size: 12pt;
         	font-weight: normal;
-        	background-color: #FFFFFF;
-        	border-bottom-width: 1px;
-        	border-bottom-color: #EFEFEF;
-        	border-bottom-style: solid;
         }
         #stream-footer{
         	width: 100%;
         	text-align: center;
         	border-bottom-right-radius: 8px;
         	border-bottom-left-radius: 8px;
-        	background-color: #FFFFFF;
+        }
+        #info-text{
+        	width: 100%;
         }
     </style>
 </head>
-<body style="background-color: #D5D5D5">
+<body style="background-color: #E0E0E0">
     <div id="graph"></div>
-    <div id="info"></div>
+    <div id="info">
+        <div id="info-text"></div>
+    </div>
     <div id="stream">
         <div id="stream-title"></div>
         <div id="stream-messages"></div>
@@ -142,10 +140,15 @@
         .attr("width", 800)
         .attr("height", 200);
 
+    var infoSVG = d3.select("#info")
+        .append("svg")
+        .attr("width", 800)
+        .attr("height", 0);
+
     d3.select("#stream-title").text("Messages");
 	d3.select("#stream-footer").insert("img")
-		.attr("src","http://i.imgur.com/OV5JNjB.jpg")
-		.attr("height","50px");
+		.attr("src","http://i.imgur.com/wbExTgx.png")
+		.attr("height","100px");
 
 
     var stream = d3.select("#stream-messages");
@@ -227,7 +230,7 @@
 			txt = n.name+" "+n.description;
 		}
 		// put text in info bar
-		d3.select("#info").text(txt);
+		d3.select("#info-text").text(txt);
 		// update node arrays
 		updateNodeAndLinkArrays();
 		// update svg
