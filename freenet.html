@@ -142,7 +142,7 @@
     var graphSVG = d3.select("#graph")
         .append("svg")
         .attr("width", document.getElementById("graph").offsetWidth)
-        .attr("height", 200);
+        .attr("height", 400);
 
     var infoSVG = d3.select("#info")
         .append("svg")
@@ -168,8 +168,10 @@
 
 	theForce.nodes(nodes)
 		.links(links)
-		.linkDistance(50)
-		.charge(-100)
+		.linkDistance(function(l, i){
+			return (("_prots" in l.source) && ("_prots" in l.target))*100+100;
+		})
+		.charge(-800)
 		.size([graphSVG.attr("width"),graphSVG.attr("height")])
 		.on("tick",tick)
 		.start();
@@ -185,11 +187,17 @@
 			.attr("x1", function(d){return d.source.x;})
 			.attr("y1", function(d){return d.source.y;})
 			.attr("x2", function(d){return d.target.x;})
-			.attr("y2", function(d){return d.target.y;});
+			.attr("y2", function(d){return d.target.y;})
+			.attr("style", function(d){
+				if(("_prots" in d.source) && ("_prots" in d.target))
+					return "stroke:white";
+				else
+					return "stroke:black";
+			});
 		graphSVG.selectAll("circle.node")
 			.attr("cx", function(d){return d.x;})
 			.attr("cy", function(d){return d.y;})
-			.attr("r", function(d){return (("prots" in d)||("_prots" in d))?20:10});
+			.attr("r", function(d){return (("prots" in d)||("_prots" in d))?50:20});
 	}
 
 	function updateNodeAndLinkArrays() {
@@ -202,6 +210,14 @@
 				var t = nodes.length;
 				nodes.push(nets[n].prots[p]);
 				links.push({source:s, target:t});
+			}
+		}
+		// add links between localnets
+		for(var n0 in nodes){
+			for(var n1 in nodes){
+				if((n1>n0) && ("_prots" in nodes[n0]) && ("_prots" in nodes[n1])){
+					links.push({source:nodes[n0], target:nodes[n1]});
+				}
 			}
 		}
 	}
