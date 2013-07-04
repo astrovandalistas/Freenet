@@ -230,7 +230,16 @@
 			txt = n.name+" "+n.description;
 		}
 		// put text in info bar
-		d3.select("#info-text").text(txt);
+		infoSVG.transition()
+        	.attr("height", 100)
+        	.duration(1000)
+        	.each("end", function(){
+        		d3.select("#info-text").text(txt);
+        		d3.select(this)
+        			.transition()
+        			.attr("height",0)
+        			.duration(500);
+        	});
 		// update node arrays
 		updateNodeAndLinkArrays();
 		// update svg
