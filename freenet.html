@@ -8,7 +8,6 @@
     <style type="text/css">
     	#graph, #stream, #info, #stream-message {
         	background-color: #EEE5DE;
-        	/*border-radius: 8px;*/
         	border-width: 1px;
     	}
     	#stream-message {
@@ -35,19 +34,21 @@
             stroke: black;
         }
         #graph{
-        	width: 80%;
+        	width: 74%;
+        	float: left;
         	border-color: black;
         	border-style: solid;
         }
         #stream{
-        	width: 80%;
-        	margin-top: 10px;
+        	width: 24%;
+        	margin-left: 10px;
+        	float: left;
         	border-color: black;
         	border-style: solid;
         }
         #info{
-        	width: 80%;
-        	margin-top: 10px;
+        	width: 74%;
+        	float: left;
         	border-color: black;
         	border-style: solid;
         }
@@ -129,12 +130,14 @@
     var graphSVG = d3.select("#graph")
         .append("svg")
         .attr("width", document.getElementById("graph").offsetWidth)
-        .attr("height", 400);
+        .attr("height", 500);
+
+	d3.select("#stream")
+		.style("height",document.getElementById("graph").offsetHeight-2+"px");
 
 	d3.select("#stream-footer").insert("img")
 		.attr("src","http://i.imgur.com/wbExTgx.png")
 		.attr("height","100px");
-
 
     var stream = d3.select("#stream-messages");
     stream.selectAll("div")
