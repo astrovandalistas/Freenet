@@ -22,7 +22,7 @@
             font-family: sans-serif;
             stroke-width: 1.5px;
             stroke: gray;
-            fill: white;
+            fill: black;
         }
         line.node{
             font-family: sans-serif;
@@ -128,6 +128,9 @@
 	var nodes = [],
 		links = [];
 
+	var selectedNet = null,
+		selectedPrototype = null;
+
 	updateNodeAndLinkArrays();
 
     var graphSVG = d3.select("#graph")
@@ -154,7 +157,7 @@
 
 	theForce.nodes(nodes)
 		.links(links)
-		.linkDistance(100)
+		.linkDistance(200)
 		.charge(-800)
 		.size([graphSVG.attr("width"),graphSVG.attr("height")])
 		.on("tick",tick)
@@ -175,7 +178,23 @@
 		graphSVG.selectAll("circle.node")
 			.attr("cx", function(d){return d.x;})
 			.attr("cy", function(d){return d.y;})
-			.attr("r", function(d){return ("_prots" in d)?50:20});
+			.attr("r", function(d){return ("_prots" in d)?50:30});
+		if(selectedNet){
+			graphSVG.selectAll("circle.selectedNet")
+				.attr("cx",selectedNet.x)
+				.attr("cy",selectedNet.y)
+				.attr("r",70)
+				.style("fill","none")
+				.style("stroke","black");
+		}
+		if(selectedPrototype){
+			graphSVG.selectAll("circle.selectedPrototype")
+				.attr("cx",selectedPrototype.x)
+				.attr("cy",selectedPrototype.y)
+				.attr("r",42)
+				.style("fill","none")
+				.style("stroke","black");
+		}
 	}
 
 	function updateNodeAndLinkArrays() {
@@ -193,13 +212,13 @@
 	}
 
 	function updateGraphSVG() {
-		graphSVG.selectAll("line").remove();
-		graphSVG.selectAll("circle").remove();
-		graphSVG.selectAll("line")
+		graphSVG.selectAll("line.node").remove();
+		graphSVG.selectAll("circle.node").remove();
+		graphSVG.selectAll("line.node")
 			.data(links)
 			.enter().append("svg:line")
 			.attr("class", "node");
-		graphSVG.selectAll("circle")
+		graphSVG.selectAll("circle.node")
 			.data(nodes)
 			.enter().append("svg:circle")
 			.attr("class", "node")
@@ -207,23 +226,45 @@
 	}
 
 	function nodeClick(n){
-		var txt = "";
-		// closing net
-		if(n.prots){
-			n._prots = n.prots;
-			n.prots = null;
+		// clicked a net
+		if("_prots" in n){
+			// things that always get updated
+			selectedPrototype = null;
+			graphSVG.selectAll("circle.selectedPrototype").remove();
+			graphSVG.selectAll("circle.selectedNet").remove();
+
+			// close what's open
+			if(selectedNet){
+				selectedNet._prots = selectedNet.prots;
+				selectedNet.prots = null;
+			}
+
+			// if only closing, de-select node
+			if(n == selectedNet){
+				selectedNet = null;
+			}
+			// else open new
+			else{
+				graphSVG.append("circle")
+					.attr("class","selectedNet");
+				selectedNet = n;
+				selectedNet.prots = selectedNet._prots;
+				selectedNet._prots = null;
+			}
 		}
-		// re-opening net
-		else if(("prots" in n)||("_prots" in n)){
-			n.prots = n._prots;
-			n._prots = null;
-			// setup network info bar
-			txt = n.name+" "+n.description;
-		}
+		// clicked a prototypes
 		else{
-			// setup prototype info bar
-			txt = n.name+" "+n.description;
+			// if already selected, de-select node
+			selectedPrototype = (n == selectedPrototype)?null:n;
+			if(selectedPrototype){
+				graphSVG.append("circle")
+					.attr("class","selectedPrototype");
+			}
+			else{
+				graphSVG.selectAll("circle.selectedPrototype").remove();
+			}
 		}
+
 		// update node arrays
 		updateNodeAndLinkArrays();
 		// update svg
