@@ -18,9 +18,14 @@
         	border-bottom-style: solid;
     	}
         circle.node{
-            stroke-width: 1.5px;
-            stroke: gray;
+            stroke-width: 1px;
+            stroke: black;
             fill: black;
+        }
+        circle.selectedNet, circle.selectedPrototype{
+        	stroke-width: 5px;
+            stroke: black;
+            fill: none;
         }
         text.node{
             font-family: sans-serif;
@@ -30,7 +35,7 @@
             fill: white;
         }
         line.node{
-            stroke-width: 1.5px;
+            stroke-width: 5px;
             stroke: black;
         }
         #graph{
@@ -182,17 +187,13 @@
 			graphSVG.selectAll("circle.selectedNet")
 				.attr("cx",selectedNet.x)
 				.attr("cy",selectedNet.y)
-				.attr("r",70)
-				.style("fill","none")
-				.style("stroke","black");
+				.attr("r",60);
 		}
 		if(selectedPrototype){
 			graphSVG.selectAll("circle.selectedPrototype")
 				.attr("cx",selectedPrototype.x)
 				.attr("cy",selectedPrototype.y)
-				.attr("r",42)
-				.style("fill","none")
-				.style("stroke","black");
+				.attr("r",40);
 		}
 	}
 
