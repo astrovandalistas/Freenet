@@ -6,9 +6,9 @@
 	<title>Campo de Afinidades Ubícuoas</title>
     <script type="text/javascript" src="/Users/thiago/Dev/d3.v3/d3.v3.js"></script>
     <style type="text/css">
-    	#graph, #stream, #info, #stream-message {
+    	#graph, #stream, #info, #stream-message, #title-bar, #first-column {
         	background-color: #DDDDDD;
-        	border-width: 1px;
+        	/*border-width: 1px;*/
     	}
         circle.node{
             stroke-width: 1px;
@@ -31,9 +31,18 @@
             stroke-width: 5px;
             stroke: black;
         }
-        #graph{
-        	width: 74%;
+        #first-column{
+        	width: 75%;
         	float: left;
+        }
+        #title-bar{
+        	width: 100%;
+        	text-align: center;
+        	padding-top: 24px;
+        	padding-bottom: 0px;
+        }
+        #graph{
+        	width: 100%;
         	border-color: black;
         	border-style: solid;
         	border-width: 0px;
@@ -43,6 +52,7 @@
         	width: 24%;
         	margin-left: 0px;
         	float: left;
+        	position: relative;
         	border-color: black;
         	border-style: solid;
         	border-width: 0px;
@@ -76,7 +86,12 @@
     </style>
 </head>
 <body style="background-color: #FFFFFF">
-    <div id="graph"></div>
+    <div id="first-column">
+	    <div id="title-bar">
+    		<img src="http://i.imgur.com/r3HzBMh.png" width=50%>
+    	</div>
+    	<div id="graph"></div>
+    </div>
     <div id="stream">
         <div id="stream-messages"></div>
         <div id="stream-footer"></div>
@@ -160,7 +175,7 @@
         .attr("height", 500);
 
 	d3.select("#stream")
-		.style("height",document.getElementById("graph").offsetHeight-2+"px");
+		.style("height",document.getElementById("first-column").offsetHeight-2+"px");
 
 	d3.select("#stream-footer").insert("img")
 		.attr("src","http://i.imgur.com/wbExTgx.png")
