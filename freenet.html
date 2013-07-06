@@ -133,10 +133,18 @@
 						image: "http://i.imgur.com/OV5JNjB.jpg"}]
 				}];
 
-	var msgs = ["hello", 
-				"no man. this is a longer message to see what would happen with 140 characters, but it’s hard for me to write that much. We’ll never know.", 
-				"make some noise", 
-				"unbelibubble"];
+	var msgs = [{datetime:"2013-04-12 12:12:32",
+				 text:"hello",
+				 receiver:"sms"},
+				 {datetime:"2013-05-04 01:34:55",
+				 text:"no man. this is a longer message to see what would happen with 140 characters, but it’s hard for me to write that much. We’ll never know.",
+				 receiver:"twitter"},
+				 {datetime:"2013-06-24 11:44:02",
+				 text:"make some noise",
+				 receiver:"twitter"},
+				 {datetime:"2013-07-04 13:04:15",
+				 text:"unbelibubble",
+				 receiver:"sms"}];
 
 	var nodes = [],
 		links = [];
@@ -163,7 +171,7 @@
     	.data(msgs)
     	.enter().append("div")
     	.attr("id","stream-message")
-    	.text(function(d){return d;});
+    	.text(function(d){return d.text;});
 
 	updateGraphSVG();
 
