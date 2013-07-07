@@ -113,6 +113,7 @@
         }
     </style>
 </head>
+<iframe name="form-target" width="0" height="0" seamless="seamless"></iframe>
 <body style="background-color: #FFFFFF">
     <div id="first-column">
 	    <div id="title-bar">
@@ -122,7 +123,7 @@
     </div>
     <div id="stream">
     	<div id="stream-input">
-    		<form action="">
+    		<form id="stream-input-form" onSubmit="return handleForm()" method="post" target="form-target">
     			<div id="stream-input-row">
 					Nombre:<input type="text" id="stream-input-form-name">
 				</div>
@@ -191,16 +192,52 @@
 
 	var msgs = [{datetime:"2013-04-12 12:12:32",
 				 text:"hello",
+				 usr:"tgh",
 				 receiver:"sms"},
 				 {datetime:"2013-05-04 01:34:55",
 				 text:"no man. this is a longer message to see what would happen with 140 characters, but it’s hard for me to write that much. We’ll never know.",
+				 usr:"Less",
 				 receiver:"twitter"},
 				 {datetime:"2013-06-24 11:44:02",
 				 text:"make some noise",
+				 usr:"tgh",
 				 receiver:"twitter"},
 				 {datetime:"2013-07-04 13:04:15",
 				 text:"unbelibubble",
+				 usr:"Rod",
 				 receiver:"sms"}];
+
+    function handleForm(){
+    	if(document.getElementById("stream-input-form-message").value=='')
+    		return;
+
+    	function addZero(n){
+    		return ((n<10)?'0':'')+n;
+    	}
+    	function getDateTime(){
+    		var now = new Date();
+    		return now.getFullYear()+"-"+
+    			   addZero(now.getMonth()+1)+"-"+
+    			   addZero(now.getDate())+" "+
+    			   addZero(now.getHours())+":"+
+    			   addZero(now.getMinutes())+":"+
+    			   addZero(now.getSeconds());
+    	}
+    	var nm = {datetime:getDateTime(),
+				  text:document.getElementById("stream-input-form-message").value,
+				  usr:document.getElementById("stream-input-form-name").value,
+				  receiver:"http"};
+		msgs.unshift(nm);
+
+		stream.selectAll("div").remove();
+		stream.selectAll("div")
+    		.data(msgs)
+    		.enter().append("div")
+    		.attr("id","stream-message")
+    		.text(function(d){return d.text;});
+    	document.getElementById("stream-input-form-message").value='';
+    	return false;
+    }
 
 	var rcvrs = [{name:"sms"},
 				 {name:"twitter"},
