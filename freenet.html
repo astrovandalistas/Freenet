@@ -73,14 +73,9 @@
         	padding-bottom: 10px;
         	font-size: 12pt;
         	font-weight: normal;
-        	border-bottom-color: #E0E0E0;
+        	border-bottom-color: #C0C0C0;
         	border-bottom-width: 1px;
         	border-bottom-style: solid;
-        }
-        #stream-footer{
-        	text-align: center;
-        	border-bottom-right-radius: 8px;
-        	border-bottom-left-radius: 8px;
         }
     </style>
 </head>
@@ -93,7 +88,6 @@
     </div>
     <div id="stream">
         <div id="stream-messages"></div>
-        <div id="stream-footer"></div>
     </div>
 
     <script type="text/javascript">
@@ -174,11 +168,7 @@
         .attr("height", 500);
 
 	d3.select("#stream")
-		.style("height",document.getElementById("first-column").offsetHeight-2+"px");
-
-	d3.select("#stream-footer").insert("img")
-		.attr("src","http://i.imgur.com/wbExTgx.png")
-		.attr("height","100px");
+		.style("height",document.getElementById("first-column").offsetHeight+"px");
 
     var stream = d3.select("#stream-messages");
     stream.selectAll("div")
