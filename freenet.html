@@ -21,12 +21,24 @@
             stroke: black;
             fill: none;
         }
+        circle.receiver{
+        	stroke-width: 5px;
+        	stroke: black;
+        	fill: none;	
+        }
         text.node{
             font-family: sans-serif;
             font-size: 15px;
             text-anchor: middle;
             alignment-baseline: central;
             fill: white;
+        }
+        text.receiver{
+            font-family: sans-serif;
+            font-size: 15px;
+            text-anchor: middle;
+            alignment-baseline: central;
+            fill: black;
         }
         line.node{
             stroke-width: 5px;
@@ -154,6 +166,10 @@
 				 text:"unbelibubble",
 				 receiver:"sms"}];
 
+	var rcvrs = [{name:"sms"},
+				 {name:"twitter"},
+				 {name:"http"}]
+
 	var nodes = [],
 		links = [];
 
@@ -181,7 +197,7 @@
 
     var theForce = d3.layout.force();
 
-	theForce.nodes(nodes)
+	theForce.nodes(nodes.concat(rcvrs))
 		.links(links)
 		.linkDistance(200)
 		.charge(-800)
@@ -205,6 +221,13 @@
 			.attr("cy", function(d){return d.y;})
 			.attr("r", function(d){return ("_prots" in d)?((d.prots != null)?50:40):30});
 		graphSVG.selectAll("text.node")
+			.attr("x",function(d){return d.x;})
+			.attr("y",function(d){return d.y;});
+		graphSVG.selectAll("circle.receiver")
+			.attr("cx", function(d){return d.x;})
+			.attr("cy", function(d){return d.y;})
+			.attr("r", function(d){return 30});
+		graphSVG.selectAll("text.receiver")
 			.attr("x",function(d){return d.x;})
 			.attr("y",function(d){return d.y;});
 		if(selectedNet){
@@ -250,6 +273,14 @@
 			.attr("class", "node")
 		ngs.append("text")
 			.attr("class", "node")
+			.text(function(d){return d.name;});
+		var rgs = graphSVG.selectAll("circle.receiver")
+			.data(rcvrs)
+			.enter().append("g");
+		rgs.append("svg:circle")
+			.attr("class", "receiver")
+		rgs.append("text")
+			.attr("class", "receiver")
 			.text(function(d){return d.name;});
 	}
 
@@ -298,7 +329,7 @@
 		// update svg
 		updateGraphSVG();
 		// update graph
-		theForce.nodes(nodes)
+		theForce.nodes(nodes.concat(rcvrs))
 			.links(links)
 			.start();
 	}
