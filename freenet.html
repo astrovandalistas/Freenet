@@ -6,9 +6,8 @@
 	<title>Campo de Afinidades Ubícuoas</title>
     <script type="text/javascript" src="/Users/thiago/Dev/d3.v3/d3.v3.js"></script>
     <style type="text/css">
-    	#graph, #stream, #info, #stream-message, #title-bar, #first-column {
+    	#graph, #stream, #info, #stream-message, #title-bar, #first-column, #stream-input-form-button {
         	background-color: #DDDDDD;
-        	/*border-width: 1px;*/
         	border-color: #ACACAC;
     	}
         circle.node{
@@ -78,14 +77,37 @@
         #stream-messages{
         	width: 100%;
         }
+        #stream-input{
+        	width: 100%;
+        	padding-top: 40px;
+        	padding-bottom: 20px;
+        }
+        #stream-input-row{
+        	width: 100%;
+        	background-color: black;
+        	font-size: 12pt;
+        	font-weight: normal;
+        	vertical-align: top;
+        	color: white;
+        }
+        #stream-input-form-name, #stream-input-form-message{
+        	background: black;
+        	border-width: 0px;
+        	color: white;
+        }
+        #stream-input-form-button{
+        	border-style: none;
+        	margin-bottom: -1px;
+        }
         #stream-message{
         	padding-left: 8px;
         	padding-right: 8px;
-        	padding-top: 10px;
-        	padding-bottom: 10px;
+        	padding-top: 5px;
+        	padding-bottom: 5px;
         	font-size: 12pt;
         	font-weight: normal;
         	border-bottom-color: #C0C0C0;
+        	border-bottom-color: #DDDDDD;
         	border-bottom-width: 1px;
         	border-bottom-style: solid;
         }
@@ -99,6 +121,20 @@
     	<div id="graph"></div>
     </div>
     <div id="stream">
+    	<div id="stream-input">
+    		<form action="">
+    			<div id="stream-input-row">
+					Nombre:<input type="text" id="stream-input-form-name">
+				</div>
+				<div style="padding-bottom:4px"></div>
+				<div id="stream-input-row">
+					Mensaje:<textarea id="stream-input-form-message"></textarea>
+				</div>
+				<div id="stream-input-row" align="right">
+					<input type="submit" value="Enviar" id="stream-input-form-button">
+				</div>
+			</form>
+    	</div>
         <div id="stream-messages"></div>
     </div>
 
