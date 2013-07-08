@@ -207,6 +207,12 @@
 				 text:"unbelibubble",
 				 usr:"Rod",
 				 receiver:"sms"}];
+		msgs = [];
+
+	var rcvrs = [{name:"sms"},
+				 {name:"twitter"},
+				 {name:"freenet"},
+				 {name:"http"}]
 
     function handleForm(){
     	if(document.getElementById("stream-input-form-message").value=='')
@@ -224,10 +230,13 @@
     			   addZero(now.getMinutes())+":"+
     			   addZero(now.getSeconds());
     	}
-    	var nm = {datetime:getDateTime(),
-				  text:document.getElementById("stream-input-form-message").value,
-				  usr:document.getElementById("stream-input-form-name").value,
-				  receiver:"http"};
+    	var nm = {dateTime:getDateTime(),
+    			  epoch:(new Date).getTime(),
+				  messageText:document.getElementById("stream-input-form-message").value,
+				  user:document.getElementById("stream-input-form-name").value,
+				  localnet:(selectedNet!=null?selectedNet.name:""),
+				  prototype:(selectedPrototype!=null?selectedPrototype.name:"")};
+		console.log(nm);
 		msgs.unshift(nm);
 
 		stream.selectAll("div").remove();
@@ -235,14 +244,10 @@
     		.data(msgs)
     		.enter().append("div")
     		.attr("id","stream-message")
-    		.text(function(d){return d.text;});
+    		.text(function(d){return d.messageText;});
     	document.getElementById("stream-input-form-message").value='';
     	return false;
     }
-
-	var rcvrs = [{name:"sms"},
-				 {name:"twitter"},
-				 {name:"http"}]
 
 	var nodes = [],
 		links = [];
@@ -265,7 +270,7 @@
     	.data(msgs)
     	.enter().append("div")
     	.attr("id","stream-message")
-    	.text(function(d){return d.text;});
+    	.text(function(d){return d.messageText;});
 
 	updateGraphSVG();
 
