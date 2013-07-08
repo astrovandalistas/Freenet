@@ -5,6 +5,7 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
 	<title>Campo de Afinidades Ubícuoas</title>
     <script type="text/javascript" src="/Users/thiago/Dev/d3.v3/d3.v3.js"></script>
+    <script type="text/javascript" src="http://poesiacolaborativa.nodester.com/socket.io/socket.io.js"></script>
     <style type="text/css">
     	#graph, #stream, #info, #stream-message, #title-bar, #first-column, #stream-input-form-button {
         	background-color: #DDDDDD;
@@ -142,21 +143,27 @@
 
     <script type="text/javascript">
 
+    var socket = io.connect('http://localhost:3700');
+
 	var nets = [{name: "MOLAA",
 				location: "Los Angeles, CA",
 				description: "MOLAA blah blah blah",
 				image: "http://i.imgur.com/OV5JNjB.jpg",
 				active: true,
 				_prots: [{name: "AST",
+						address: ["192.168.23.12",4555],
 						description: "ohh lalalala",
 						image: "http://i.imgur.com/OV5JNjB.jpg"},
     					{name: "CAU",
+    					address: ["192.168.23.15",4555],
     					description: "ohh lalalala",
 						image: "http://i.imgur.com/OV5JNjB.jpg"},
 			    		{name: "ISO",
+			    		address: ["192.168.23.18",4555],
 			    		description: "ohh lalalala",
 						image: "http://i.imgur.com/OV5JNjB.jpg"},
 			    		{name: "VLE",
+			    		address: ["192.168.23.20",4555],
 			    		description: "ohh lalalala",
 						image: "http://i.imgur.com/OV5JNjB.jpg"}]
 				},
@@ -166,9 +173,15 @@
 				image: "http://i.imgur.com/OV5JNjB.jpg",
 				active: true,
 				_prots: [{name: "AST",
+						address: ["192.168.2.2",4555],
+						description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg"},
+						{name: "AST",
+						address: ["192.168.2.2",4444],
 						description: "ohh lalalala",
 						image: "http://i.imgur.com/OV5JNjB.jpg"},
 			    		{name: "ISO",
+			    		address: ["192.168.2.2",4599],
 			    		description: "ohh lalalala",
 						image: "http://i.imgur.com/OV5JNjB.jpg"}]
 				},
@@ -178,41 +191,29 @@
 				image: "http://i.imgur.com/OV5JNjB.jpg",
 				active: false,
 				_prots: [{name: "AST",
+						address: ["192.168.2.2",4555],
 						description: "ohh lalalala",
 						image: "http://i.imgur.com/OV5JNjB.jpg"},
     					{name: "CAU",
+    					address: ["192.168.2.20",4556],
     					description: "ohh lalalala",
 						image: "http://i.imgur.com/OV5JNjB.jpg"},
 			    		{name: "ISO",
+			    		address: ["192.168.2.30",4588],
 			    		description: "ohh lalalala",
 						image: "http://i.imgur.com/OV5JNjB.jpg"},
 			    		{name: "VLE",
+			    		address: ["192.168.2.2",4556],
 			    		description: "ohh lalalala",
 						image: "http://i.imgur.com/OV5JNjB.jpg"}]
 				}];
 
-	var msgs = [{datetime:"2013-04-12 12:12:32",
-				 text:"hello",
-				 usr:"tgh",
-				 receiver:"sms"},
-				 {datetime:"2013-05-04 01:34:55",
-				 text:"no man. this is a longer message to see what would happen with 140 characters, but it’s hard for me to write that much. We’ll never know.",
-				 usr:"Less",
-				 receiver:"twitter"},
-				 {datetime:"2013-06-24 11:44:02",
-				 text:"make some noise",
-				 usr:"tgh",
-				 receiver:"twitter"},
-				 {datetime:"2013-07-04 13:04:15",
-				 text:"unbelibubble",
-				 usr:"Rod",
-				 receiver:"sms"}];
-		msgs = [];
-
 	var rcvrs = [{name:"sms"},
 				 {name:"twitter"},
 				 {name:"freenet"},
-				 {name:"http"}]
+				 {name:"http"}];
+
+	var msgs = [];
 
     function handleForm(){
     	if(document.getElementById("stream-input-form-message").value=='')
@@ -230,14 +231,15 @@
     			   addZero(now.getMinutes())+":"+
     			   addZero(now.getSeconds());
     	}
-    	var nm = {dateTime:getDateTime(),
-    			  epoch:(new Date).getTime(),
-				  messageText:document.getElementById("stream-input-form-message").value,
-				  user:document.getElementById("stream-input-form-name").value,
-				  localnet:(selectedNet!=null?selectedNet.name:""),
-				  prototype:(selectedPrototype!=null?selectedPrototype.name:"")};
-		console.log(nm);
-		msgs.unshift(nm);
+    	var newMessage = {epoch:(new Date).getTime(),
+				  		  messageText:document.getElementById("stream-input-form-message").value,
+				  		  user:document.getElementById("stream-input-form-name").value,
+				  		  localNetName:(selectedNet!=null?selectedNet.name:""),
+				  		  prototype:(selectedPrototype!=null?selectedPrototype.address:"")};
+		console.log(newMessage);
+		msgs.unshift(newMessage);
+
+		socket.emit('addFrontEndMessage', newMessage);
 
 		stream.selectAll("div").remove();
 		stream.selectAll("div")
