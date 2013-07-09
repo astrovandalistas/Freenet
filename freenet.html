@@ -163,7 +163,7 @@
 
     <script type="text/javascript">
 
-    var socket = io.connect('http://192.168.1.134:3700');
+    var socket = io.connect('http://192.168.1.119:3700/frontEnd');
 
 	var nets = [{name: "MOLAA",
 				location: "Los Angeles, CA",
@@ -205,12 +205,16 @@
 			    		description: "ohh lalalala",
 						image: "http://i.imgur.com/OV5JNjB.jpg"}]
 				},
-				{name: "542",
+				{name: "Five42",
 				location: "Oakland, CA",
 				description: "542 blah blah blah",
 				image: "http://i.imgur.com/OV5JNjB.jpg",
 				active: false,
-				_prots: [{name: "AST",
+				_prots: [{name: "ProcessingTest",
+						address: ["localhost",9000],
+						description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg"},
+						{name: "AST",
 						address: ["192.168.2.2",4555],
 						description: "ohh lalalala",
 						image: "http://i.imgur.com/OV5JNjB.jpg"},
@@ -260,7 +264,7 @@
 		console.log(newMessage);
 		msgs.unshift(newMessage);
 
-		socket.emit('addFrontEndMessage', newMessage);
+		socket.emit('addMessage', newMessage);
 
 		stream.selectAll("div").remove();
 		var streamMsgs = stream.selectAll("div")
