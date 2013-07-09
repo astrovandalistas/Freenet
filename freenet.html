@@ -7,7 +7,7 @@
     <script type="text/javascript" src="/Users/thiago/Dev/d3.v3/d3.v3.js"></script>
     <script type="text/javascript" src="http://poesiacolaborativa.nodester.com/socket.io/socket.io.js"></script>
     <style type="text/css">
-    	#graph, #stream, #info, #stream-message, #title-bar, #first-column, #stream-input-form-button {
+    	#graph, #stream, #info, .stream-message, #title-bar, #first-column, #stream-input-form-button {
         	background-color: #DDDDDD;
         	border-color: #ACACAC;
     	}
@@ -101,17 +101,38 @@
         	border-style: none;
         	margin-bottom: -1px;
         }
-        #stream-message{
+        div.stream-message{
         	padding-left: 8px;
         	padding-right: 8px;
         	padding-top: 5px;
         	padding-bottom: 5px;
-        	font-size: 12pt;
-        	font-weight: normal;
         	border-bottom-color: #C0C0C0;
         	border-bottom-color: #DDDDDD;
         	border-bottom-width: 1px;
         	border-bottom-style: solid;
+        }
+        p.message-user{
+        	position: relative;
+        	float: left;
+			font-size: 10pt;
+        	font-weight: bold;
+        	margin-top: 0px;
+        	margin-bottom: 0px;
+        }
+        p.message-time{
+        	position: relative;
+        	float: right;
+			font-size: 10pt;
+        	font-weight: bold;
+        	margin-top: 0px;
+        	margin-bottom: 0px;
+        }
+        p.message-text{
+			clear: both;
+			font-size: 12pt;
+        	font-weight: normal;
+        	margin-top: 0px;
+        	margin-bottom: 0px;
         }
     </style>
 </head>
@@ -143,7 +164,7 @@
 
     <script type="text/javascript">
 
-    var socket = io.connect('http://192.168.1.119:3700');
+    var socket = io.connect('http://192.168.1.134:3700');
 
 	var nets = [{name: "MOLAA",
 				location: "Los Angeles, CA",
@@ -222,8 +243,9 @@
     	function addZero(n){
     		return ((n<10)?'0':'')+n;
     	}
-    	function getDateTime(){
-    		var now = new Date();
+    	function getDateTime(epochSecs){
+    		var now = new Date(0);
+    		now.setUTCSeconds(epochSecs);
     		return now.getFullYear()+"-"+
     			   addZero(now.getMonth()+1)+"-"+
     			   addZero(now.getDate())+" "+
@@ -231,7 +253,7 @@
     			   addZero(now.getMinutes())+":"+
     			   addZero(now.getSeconds());
     	}
-    	var newMessage = {epoch:(new Date).getTime(),
+    	var newMessage = {epoch:(new Date).getTime()/1000,
 				  		  messageText:document.getElementById("stream-input-form-message").value,
 				  		  user:document.getElementById("stream-input-form-name").value,
 				  		  localNetName:(selectedNet!=null?selectedNet.name:""),
@@ -242,10 +264,18 @@
 		socket.emit('addFrontEndMessage', newMessage);
 
 		stream.selectAll("div").remove();
-		stream.selectAll("div")
+		var streamMsgs = stream.selectAll("div")
     		.data(msgs)
     		.enter().append("div")
-    		.attr("id","stream-message")
+    		.attr("class","stream-message");
+    	streamMsgs.append("p")
+    		.attr("class","message-user")
+    		.text(function(d){return d.user;});
+    	streamMsgs.append("p")
+    		.attr("class","message-time")
+    		.text(function(d){return getDateTime(d.epoch);});
+    	streamMsgs.append("p")
+    		.attr("class","message-text")
     		.text(function(d){return d.messageText;});
     	document.getElementById("stream-input-form-message").value='';
     	return false;
@@ -271,7 +301,7 @@
     stream.selectAll("div")
     	.data(msgs)
     	.enter().append("div")
-    	.attr("id","stream-message")
+    	.attr("class","stream-message")
     	.text(function(d){return d.messageText;});
 
 	updateGraphSVG();
