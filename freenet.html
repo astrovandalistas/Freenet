@@ -169,6 +169,9 @@
 
     <script type="text/javascript">
 
+    // my name
+    var receiverName = "http"; // (or internet) and freeNet... 
+
     // start socket connection
     var socket = io.connect('http://192.168.1.119:3700/frontEnd');
     // register addMessage event
@@ -292,10 +295,10 @@
 				  		  user:document.getElementById("stream-input-form-name").value,
 				  		  localNetName:(selectedNet!=null?selectedNet.name:""),
 				  		  localNetLocation:(selectedNet!=null?selectedNet.location:""),
+				  		  receiver:receiverName,
 				  		  prototypeAddress:(selectedPrototype!=null?selectedPrototype.address:"")};
 
 		// DEBUG: for testing only
-		newMessage.receiver = "http";
 		onAddMessage(newMessage);
 
 		socket.emit('addMessage', newMessage);
