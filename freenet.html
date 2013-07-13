@@ -427,6 +427,7 @@
 	}
 
 	function nodeClick(n){
+		graphSVG.selectAll("line.message").remove();
 		// clicked a net
 		if("_prots" in n){
 			// things that always get updated
