@@ -163,13 +163,19 @@
 
     <script type="text/javascript">
 
+    // some socket stuff
     var socket = io.connect('http://192.168.1.119:3700/frontEnd');
+    // TODO: initial query of localNets and messages to display
 
 	var nets = [{name: "MOLAA",
 				location: "Los Angeles, CA",
 				description: "MOLAA blah blah blah",
 				image: "http://i.imgur.com/OV5JNjB.jpg",
 				active: true,
+				rcvrs: [{name:"sms"},
+				 		{name:"twitter"},
+				 		{name:"freenet"},
+				 		{name:"http"}],
 				_prots: [{name: "AST",
 						address: ["192.168.23.12",4555],
 						description: "ohh lalalala",
@@ -192,6 +198,10 @@
 				description: "SP blah blah blah",
 				image: "http://i.imgur.com/OV5JNjB.jpg",
 				active: true,
+				rcvrs: [{name:"sms"},
+				 		{name:"twitter"},
+				 		{name:"freenet"},
+				 		{name:"http"}],
 				_prots: [{name: "AST",
 						address: ["192.168.2.2",4555],
 						description: "ohh lalalala",
@@ -210,6 +220,10 @@
 				description: "542 blah blah blah",
 				image: "http://i.imgur.com/OV5JNjB.jpg",
 				active: false,
+				rcvrs: [{name:"sms"},
+				 		{name:"twitter"},
+				 		{name:"freenet"},
+				 		{name:"http"}],
 				_prots: [{name: "ProcessingTest",
 						address: ["localhost",9000],
 						description: "ohh lalalala",
@@ -232,10 +246,18 @@
 						image: "http://i.imgur.com/OV5JNjB.jpg"}]
 				}];
 
-	var rcvrs = [{name:"sms"},
-				 {name:"twitter"},
-				 {name:"freenet"},
-				 {name:"http"}];
+	// get list of receivers from net info
+	var tmp_rcvr = {};
+	for(var n in nets){
+		for(var r in nets[n].rcvrs){
+			tmp_rcvr[nets[n].rcvrs[r].name] = nets[n].rcvrs[r].name;
+		}
+	}
+
+	var rcvrs = [];
+	for(var r in tmp_rcvr){
+		rcvrs.push({name:tmp_rcvr[r]})
+	}
 
 	var msgs = [];
 
@@ -290,8 +312,6 @@
 	var selectedNet = null,
 		selectedPrototype = null;
 
-	updateGraphArrays();
-
     var graphSVG = d3.select("#graph")
         .append("svg")
         .attr("width", document.getElementById("graph").offsetWidth)
@@ -300,17 +320,12 @@
 	d3.select("#stream")
 		.style("height",document.getElementById("first-column").offsetHeight+"px");
 
-    var stream = d3.select("#stream-messages");
-    stream.selectAll("div")
-    	.data(msgs)
-    	.enter().append("div")
-    	.attr("class","stream-message")
-    	.text(function(d){return d.messageText;});
-
+	updateGraphArrays();
 	updateGraphSVG();
 
-    var theForce = d3.layout.force();
+	var stream = d3.select("#stream-messages");
 
+    var theForce = d3.layout.force();
 	theForce.nodes(nodes.concat(rcvrs))
 		.links(links)
 		.linkDistance(200)
@@ -324,6 +339,7 @@
 		theForce.size([graphSVG.attr("width"),graphSVG.attr("height")]).start();
 	};
 
+	// d3 graph tick function
 	function tick(){
 		graphSVG.selectAll("line.node")
 			.attr("x1", function(d){return d.source.x;})
