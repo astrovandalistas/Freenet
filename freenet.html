@@ -44,6 +44,10 @@
             stroke-width: 5px;
             stroke: black;
         }
+        line.message{
+            stroke-width: 5px;
+            stroke: red;        	
+        }
         #first-column{
         	width: 66%;
         	float: left;
@@ -163,8 +167,11 @@
 
     <script type="text/javascript">
 
-    // some socket stuff
+    // start socket connection
     var socket = io.connect('http://192.168.1.119:3700/frontEnd');
+    // register addMessage event
+    socket.on('addMessage', onAddMessage);
+
     // TODO: initial query of localNets and messages to display
 
 	var nets = [{name: "MOLAA",
@@ -282,9 +289,12 @@
 				  		  messageText:document.getElementById("stream-input-form-message").value,
 				  		  user:document.getElementById("stream-input-form-name").value,
 				  		  localNetName:(selectedNet!=null?selectedNet.name:""),
-				  		  prototype:(selectedPrototype!=null?selectedPrototype.address:"")};
-		console.log(newMessage);
-		msgs.unshift(newMessage);
+				  		  localNetLocation:(selectedNet!=null?selectedNet.location:""),
+				  		  prototypeAddress:(selectedPrototype!=null?selectedPrototype.address:"")};
+
+		// DEBUG: for testing only
+		newMessage.receiver = "http";
+		onAddMessage(newMessage);
 
 		socket.emit('addMessage', newMessage);
 
@@ -341,6 +351,11 @@
 
 	// d3 graph tick function
 	function tick(){
+		graphSVG.selectAll("line.message")
+			.attr("x1", function(d){return d.source.x;})
+			.attr("y1", function(d){return d.source.y;})
+			.attr("x2", function(d){return d.target.x;})
+			.attr("y2", function(d){return d.target.y;});
 		graphSVG.selectAll("line.node")
 			.attr("x1", function(d){return d.source.x;})
 			.attr("y1", function(d){return d.source.y;})
@@ -462,6 +477,64 @@
 		theForce.nodes(nodes.concat(rcvrs))
 			.links(links)
 			.start();
+	}
+
+	// these are messages that come from 
+	//     receiver->localNet->server->frontEnd
+	function onAddMessage(data){
+		// get info from data json
+		var newMessage = {epoch:data.epoch,
+				  		  messageText:data.messageText,
+				  		  user:data.user,
+				  		  localNetName:data.localNetName,
+				  		  localNetLocation:data.localNetLocation,
+				  		  receiver:data.receiver,
+				  		  prototypeAddress:data.prototypeAddress};
+		// shove in message array
+		msgs.unshift(newMessage);
+		// TODO: update stream? re-query?
+
+		// animation
+		var node0 = null;
+		for(r in rcvrs){
+			if(rcvrs[r].name == data.receiver){
+				node0 = rcvrs[r];
+			}
+		}
+		var node1 = [];
+		// TODO: add selectedNet.location to check
+		if((selectedNet) && (data.localNetName == selectedNet.name)){
+			for(p in nodes){
+				if((nodes[p].address) && 
+					(((nodes[p].address[0] == data.prototypeAddress[0]) && 
+					(nodes[p].address[1] == data.prototypeAddress[1])) ||
+					(data.prototypeAddress == ""))){
+					node1.push(nodes[p]);
+				}
+			}
+		}
+		else{
+			for(p in nodes){
+				if((nodes[p].name) && 
+					((data.localNetName == nodes[p].name) || (data.localNetName == ""))){
+					node1.push(nodes[p]);
+				}
+			}
+		}
+		console.log("node0");
+		console.log(node0);
+		console.log("node1");
+		console.log(node1);
+		var msgLinks = [];
+		for(t in node1){
+			msgLinks.push({source:node0, target:node1[t]});
+		}
+		// put some lines in svg graph
+		graphSVG.selectAll("line.message").remove();
+		graphSVG.selectAll("line.message")
+			.data(msgLinks)
+			.enter().append("svg:line")
+			.attr("class", "message");
 	}
 
     </script>
