@@ -46,7 +46,9 @@
         }
         line.message{
             stroke-width: 5px;
-            stroke: red;        	
+            stroke: #DD1111;
+            stroke-dasharray: 1,10;
+            stroke-linecap: round;
         }
         #first-column{
         	width: 66%;
@@ -351,11 +353,6 @@
 
 	// d3 graph tick function
 	function tick(){
-		graphSVG.selectAll("line.message")
-			.attr("x1", function(d){return d.source.x;})
-			.attr("y1", function(d){return d.source.y;})
-			.attr("x2", function(d){return d.target.x;})
-			.attr("y2", function(d){return d.target.y;});
 		graphSVG.selectAll("line.node")
 			.attr("x1", function(d){return d.source.x;})
 			.attr("y1", function(d){return d.source.y;})
@@ -533,8 +530,23 @@
 		graphSVG.selectAll("line.message").remove();
 		graphSVG.selectAll("line.message")
 			.data(msgLinks)
-			.enter().append("svg:line")
-			.attr("class", "message");
+			.enter().insert("svg:line",":first-child")
+			.attr("class", "message")
+			.attr("x1", function(d){return d.source.x;})
+			.attr("y1", function(d){return d.source.y;})
+			.attr("x2", function(d){return d.source.x;})
+			.attr("y2", function(d){return d.source.y;})
+			.transition()
+			.attr("x2", function(d){return d.target.x;})
+			.attr("y2", function(d){return d.target.y;})
+			.duration(1000)
+			.each("end",function() {
+				d3.select(this)
+					.transition()
+					.attr("x1", function(d){return d.target.x;})
+					.attr("y1", function(d){return d.target.y;})
+					.duration(1000);
+			});
 	}
 
     </script>
