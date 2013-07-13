@@ -290,7 +290,7 @@
 	var selectedNet = null,
 		selectedPrototype = null;
 
-	updateNodeAndLinkArrays();
+	updateGraphArrays();
 
     var graphSVG = d3.select("#graph")
         .append("svg")
@@ -358,7 +358,7 @@
 		}
 	}
 
-	function updateNodeAndLinkArrays() {
+	function updateGraphArrays() {
 		nodes = []; 
 		links = [];
 		for (var n in nets){
@@ -439,7 +439,7 @@
 		}
 
 		// update node arrays
-		updateNodeAndLinkArrays();
+		updateGraphArrays();
 		// update svg
 		updateGraphSVG();
 		// update graph
