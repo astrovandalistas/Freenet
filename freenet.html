@@ -173,14 +173,16 @@
     var receiverName = "http"; // (or internet) and freeNet... 
 
     // start socket connection
-    var socket = io.connect('http://192.168.1.119:3700/frontEnd');
-    // register addMessage event
+    var socket = io.connect('http://192.168.1.104:3700/frontEnd');
+    // register events
     socket.on('addMessage', onAddMessage);
+    socket.on('addLocalNet', onAddLocalNet);
+    socket.on('addPrototype', onAddPrototype);
 
     // TODO: initial query of localNets and messages to display
 
 	var nets = [{name: "MOLAA",
-				location: "Los Angeles, CA",
+				location: {city:"Long Beach", state:"CA", country:"USA", coordinates:[33.7669, -118.1883]},
 				description: "MOLAA blah blah blah",
 				image: "http://i.imgur.com/OV5JNjB.jpg",
 				active: true,
@@ -191,22 +193,26 @@
 				_prots: [{name: "AST",
 						address: ["192.168.23.12",4555],
 						description: "ohh lalalala",
-						image: "http://i.imgur.com/OV5JNjB.jpg"},
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
     					{name: "CAU",
     					address: ["192.168.23.15",4555],
     					description: "ohh lalalala",
-						image: "http://i.imgur.com/OV5JNjB.jpg"},
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
 			    		{name: "ISO",
 			    		address: ["192.168.23.18",4555],
 			    		description: "ohh lalalala",
-						image: "http://i.imgur.com/OV5JNjB.jpg"},
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
 			    		{name: "VLE",
 			    		address: ["192.168.23.20",4555],
 			    		description: "ohh lalalala",
-						image: "http://i.imgur.com/OV5JNjB.jpg"}]
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true}]
 				},
 				{name: "SESC",
-				location: "São Paulo, SP",
+				location: {city:"São Paulo", state:"SP", country:"Brazil", coordinates:[-23.5000, -46.6167]},
 				description: "SP blah blah blah",
 				image: "http://i.imgur.com/OV5JNjB.jpg",
 				active: true,
@@ -217,18 +223,21 @@
 				_prots: [{name: "AST",
 						address: ["192.168.2.2",4555],
 						description: "ohh lalalala",
-						image: "http://i.imgur.com/OV5JNjB.jpg"},
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
 						{name: "AST",
 						address: ["192.168.2.2",4444],
 						description: "ohh lalalala",
-						image: "http://i.imgur.com/OV5JNjB.jpg"},
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
 			    		{name: "ISO",
 			    		address: ["192.168.2.2",4599],
 			    		description: "ohh lalalala",
-						image: "http://i.imgur.com/OV5JNjB.jpg"}]
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true}]
 				},
 				{name: "Five42",
-				location: "Oakland, CA",
+				location: {city:"Oakland", state:"CA", country:"USA", coordinates:[37.8044, -122.2697]},
 				description: "542 blah blah blah",
 				image: "http://i.imgur.com/OV5JNjB.jpg",
 				active: false,
@@ -239,23 +248,28 @@
 				_prots: [{name: "ProcessingTest",
 						address: ["localhost",9000],
 						description: "ohh lalalala",
-						image: "http://i.imgur.com/OV5JNjB.jpg"},
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
 						{name: "AST",
 						address: ["192.168.2.2",4555],
 						description: "ohh lalalala",
-						image: "http://i.imgur.com/OV5JNjB.jpg"},
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
     					{name: "CAU",
     					address: ["192.168.2.20",4556],
     					description: "ohh lalalala",
-						image: "http://i.imgur.com/OV5JNjB.jpg"},
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
 			    		{name: "ISO",
 			    		address: ["192.168.2.30",4588],
 			    		description: "ohh lalalala",
-						image: "http://i.imgur.com/OV5JNjB.jpg"},
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
 			    		{name: "VLE",
 			    		address: ["192.168.2.2",4556],
 			    		description: "ohh lalalala",
-						image: "http://i.imgur.com/OV5JNjB.jpg"}]
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true}]
 				}];
 
 	// get list of receivers from net info
@@ -480,6 +494,42 @@
 			.start();
 	}
 
+	function onAddPrototype(data){
+		console.log("from onAddPrototype");
+		for (n in nets){
+			if((data.location.coordinates) && (data.name) && 
+			   (data.name == nets[n].name) && 
+			   (data.location.coordinates[0] == nets[n].location.coordinates[0]) && 
+			   (data.location.coordinates[1] == nets[n].location.coordinates[1])){
+				var newProt = {name:data.name,
+							   address:data.address,
+							   description:data.description,
+							   image:data.image,
+							   active:data.active};
+				// check if this is the net being displayed
+				if(nets[n].prots != null){
+					nets[n].prots.push(newProt);
+				}
+				else if(nets[n]._prots != null){
+					nets[n]._prots.push(newProt);
+				}
+			}
+		}
+	}
+
+	function onAddLocalNet(data){
+		console.log("from onAddLocalNet");
+		console.log(data);
+		var newNet = {name:data.name,
+					  location:data.location,
+					  description:data.description,
+					  image:data.image,
+					  active:data.active,
+					  rcvrs: data.rcvrs,
+					  _prots:[]};
+		nets.push(newNet);
+	}
+
 	// these are messages that come from 
 	//     receiver->localNet->server->frontEnd
 	function onAddMessage(data){
@@ -503,8 +553,9 @@
 			}
 		}
 		var node1 = [];
-		// TODO: add selectedNet.location to check
-		if((selectedNet) && (data.localNetName == selectedNet.name)){
+		if((selectedNet) && (data.localNetName == selectedNet.name) &&
+		   (data.location.coordinates[0] == selectedNet.location.coordinates[0]) &&
+		   (data.location.coordinates[1] == selectedNet.location.coordinates[1])){
 			for(p in nodes){
 				if((nodes[p].address) && 
 					(((nodes[p].address[0] == data.prototypeAddress[0]) && 
