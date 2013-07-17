@@ -502,15 +502,15 @@
 	function onAddPrototype(data){
 		console.log("from onAddPrototype");
 		for (n in nets){
-			if((data.location.coordinates) && (data.name) && 
+			if((data.localNet.location.coordinates) && (data.localNet.name) && 
 			   (data.name == nets[n].name) && 
-			   (data.location.coordinates[0] == nets[n].location.coordinates[0]) && 
-			   (data.location.coordinates[1] == nets[n].location.coordinates[1])){
-				var newProt = {name:data.name,
-							   address:data.address,
-							   description:data.description,
-							   image:data.image,
-							   active:data.active};
+			   (data.localNet.location.coordinates[0] == nets[n].location.coordinates[0]) && 
+			   (data.localNet.location.coordinates[1] == nets[n].location.coordinates[1])){
+				var newProt = {name:data.prototype.name,
+							   address:data.prototype.address,
+							   description:data.prototype.description,
+							   image:data.prototype.image,
+							   active:data.prototype.active};
 				// check if this is the net being displayed
 				if(nets[n].prots != null){
 					nets[n].prots.push(newProt);
