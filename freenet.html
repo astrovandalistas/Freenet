@@ -336,12 +336,14 @@
         .attr("width", document.getElementById("graph").offsetWidth)
         .attr("height", 500);
 
-	d3.select("#stream")
-		.style("height",document.getElementById("first-column").offsetHeight+"px");
+    window.onload = function(){
+		d3.select("#stream")
+			.style("height",document.getElementById("first-column").offsetHeight+"px");
 
-	updateGraphArrays();
-	updateReceivers();
-	updateGraphSVG();
+		updateGraphArrays();
+		updateReceivers();
+		updateGraphSVG();
+    }
 
 	var stream = d3.select("#stream-messages");
 
@@ -355,6 +357,9 @@
 		.start();
 
 	window.onresize = function(event) {
+		d3.select("#stream")
+			.style("height",document.getElementById("first-column").offsetHeight+"px");
+
 		graphSVG.attr("width",document.getElementById("graph").offsetWidth);
 		theForce.size([graphSVG.attr("width"),graphSVG.attr("height")]).start();
 	};
@@ -449,7 +454,6 @@
 	}
 
 	function nodeClick(n){
-		graphSVG.selectAll("line.message").remove();
 		// clicked a net
 		if("_prots" in n){
 			// things that always get updated
@@ -606,7 +610,6 @@
 			msgLinks.push({source:node0, target:node1[t]});
 		}
 		// put some lines in svg graph
-		graphSVG.selectAll("line.message").remove();
 		graphSVG.selectAll("line.message")
 			.data(msgLinks)
 			.enter().insert("svg:line",":first-child")
@@ -624,7 +627,10 @@
 					.transition()
 					.attr("x1", function(d){return d.target.x;})
 					.attr("y1", function(d){return d.target.y;})
-					.duration(1000);
+					.duration(1000)
+					.each("end",function(){
+						graphSVG.selectAll("line.message").remove();
+					});
 			});
 	}
 
