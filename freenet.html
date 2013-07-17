@@ -520,6 +520,15 @@
 				}
 			}
 		}
+
+		// update node arrays
+		updateGraphArrays();
+		// update svg
+		updateGraphSVG();
+		// update graph
+		theForce.nodes(nodes.concat(rcvrs))
+			.links(links)
+			.start();
 	}
 
 	function onAddLocalNet(data){
