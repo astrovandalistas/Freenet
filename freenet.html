@@ -173,13 +173,13 @@
     var receiverName = "http"; // (or internet) and freeNet... 
 
     // start socket connection
-    var socket = io.connect('http://192.168.1.104:3700/frontEnd');
+    var socket = io.connect('http://foocoop.mx:3700/frontEnd');
     // register events
     socket.on('addMessage', onAddMessage);
     socket.on('addLocalNet', onAddLocalNet);
     socket.on('addPrototype', onAddPrototype);
 
-    // TODO: initial query of localNets and messages to display
+    // TODO: initial query of messages to display
 
 	var nets = [{name: "MOLAA",
 				location: {city:"Long Beach", state:"CA", country:"USA", coordinates:[33.7669, -118.1883]},
@@ -272,19 +272,8 @@
 						active: true}]
 				}];
 
-	// get list of receivers from net info
-	var tmp_rcvr = {};
-	for(var n in nets){
-		for(var r in nets[n].rcvrs){
-			tmp_rcvr[nets[n].rcvrs[r].name] = nets[n].rcvrs[r].name;
-		}
-	}
-
+	nets = [];
 	var rcvrs = [];
-	for(var r in tmp_rcvr){
-		rcvrs.push({name:tmp_rcvr[r]})
-	}
-
 	var msgs = [];
 
     function handleForm(){
@@ -308,11 +297,12 @@
 				  		  messageText:document.getElementById("stream-input-form-message").value,
 				  		  user:document.getElementById("stream-input-form-name").value,
 				  		  localNetName:(selectedNet!=null?selectedNet.name:""),
-				  		  localNetLocation:(selectedNet!=null?selectedNet.location:""),
+				  		  localNetLocation:(selectedNet!=null?selectedNet.location:""),				  		  
 				  		  receiver:receiverName,
 				  		  prototypeAddress:(selectedPrototype!=null?selectedPrototype.address:"")};
 
 		// DEBUG: for testing only
+		newMessage.location = newMessage.localNetLocation;
 		onAddMessage(newMessage);
 
 		socket.emit('addMessage', newMessage);
@@ -350,6 +340,7 @@
 		.style("height",document.getElementById("first-column").offsetHeight+"px");
 
 	updateGraphArrays();
+	updateReceivers();
 	updateGraphSVG();
 
 	var stream = d3.select("#stream-messages");
@@ -400,6 +391,20 @@
 				.attr("cx",selectedPrototype.x)
 				.attr("cy",selectedPrototype.y)
 				.attr("r",40);
+		}
+	}
+
+	// get list of receivers from net info
+	function updateReceivers(){
+		var tmp_rcvrs = [];
+		for(var n in nets){
+			for(var r in nets[n].rcvrs){
+				tmp_rcvrs[nets[n].rcvrs[r].name] = nets[n].rcvrs[r].name;
+			}
+		}
+		rcvrs = [];
+		for(var r in tmp_rcvrs){
+			rcvrs.push({name:r});
 		}
 	}
 
@@ -528,6 +533,16 @@
 					  rcvrs: data.rcvrs,
 					  _prots:[]};
 		nets.push(newNet);
+		// update node arrays
+		updateGraphArrays();
+		// update receivers
+		updateReceivers();
+		// update svg
+		updateGraphSVG();
+		// update graph
+		theForce.nodes(nodes.concat(rcvrs))
+			.links(links)
+			.start();
 	}
 
 	// these are messages that come from 
