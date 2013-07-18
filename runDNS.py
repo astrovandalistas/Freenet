@@ -4,7 +4,7 @@ import os, time
 
 CONF_DIR = "/etc"
 
-sites = ["foocoop.mx", "api.twitter.com"]
+sites = ["foocoop.mx", "api.twitter.com", "github.com"]
 
 r = "no-poll\nserver=8.8.8.8\n\n"
 
@@ -21,16 +21,16 @@ os.popen(cmd).read()
 cmd = "sudo /etc/init.d/dnsmasq restart"
 os.spawnl(os.P_NOWAIT, cmd)
 
-time.sleep(1)
+time.sleep(3)
 
 for s in sites:
-	cmd = "ping -c 1 "+s+" | grep -o \'([0-9.]\\+)\' | sed \'s/[()]//g\'"
+	cmd = "ping -c 1 "+s+" | grep -o \'([0-9]\\+\\.\\([0-9]\\+\\.*\\)\\+)\' -m 1 | sed \'s/[()]//g\'"
 	ip = os.popen(cmd).read()
 	if ip:
 		pass
 		r += "address=/%s/%s"%(s,ip)
 
-time.sleep(1)
+time.sleep(3)
 
 f = open('dnsmasq.conf','w')
 f.write(r)
