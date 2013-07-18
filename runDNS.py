@@ -15,6 +15,9 @@ f.close()
 r += "interface=wlan0\nno-dhcp-interface=wlan0\n\n"
 r += "address=/#/74.125.224.168\n"
 
+for i in range(1,8):
+	r += "address=/aeffect0%s/45.0.0.10%s\n"%(i,i)	
+
 cmd = "sudo cp dnsmasq.conf "+CONF_DIR+"/dnsmasq.conf"
 os.popen(cmd).read()
 
