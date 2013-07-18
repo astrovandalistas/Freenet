@@ -2,19 +2,23 @@
 
 import os, time
 
-CONF_DIR = "/opt/local/etc"
+CONF_DIR = "/etc"
 
-sites = ["foocoop.mx", "api.twitter.com", "twitter.com"]
-r = "no-poll\nserver=8.8.8.8\n\n#interface=en1\n#no-dhcp-interface=en1\n\n"
+sites = ["foocoop.mx", "api.twitter.com"]
+
+r = "no-poll\nserver=8.8.8.8\n\n"
 
 f = open('dnsmasq.conf','w')
 f.write(r)
 f.close()
 
+r += "interface=wlan0\nno-dhcp-interface=wlan0\n\n"
+r += "address=/#/74.125.224.168\n"
+
 cmd = "sudo cp dnsmasq.conf "+CONF_DIR+"/dnsmasq.conf"
 os.popen(cmd).read()
 
-cmd = "sudo dnsmasq -k "
+cmd = "sudo /etc/init.d/dnsmasq restart"
 os.spawnl(os.P_NOWAIT, cmd)
 
 time.sleep(1)
@@ -27,7 +31,6 @@ for s in sites:
 		r += "address=/%s/%s"%(s,ip)
 
 time.sleep(1)
-cmd = "sudo killall dnsmasq"
 
 f = open('dnsmasq.conf','w')
 f.write(r)
@@ -36,5 +39,5 @@ f.close()
 cmd = "sudo cp dnsmasq.conf "+CONF_DIR+"/dnsmasq.conf"
 os.popen(cmd).read()
 
-cmd = "sudo dnsmasq"
+cmd = "sudo /etc/init.d/dnsmasq restart"
 os.popen(cmd).read()
