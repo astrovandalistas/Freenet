@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<title>Campo de Afinidades Ubícuoas</title>
+    <script type="text/javascript" src="/Users/thiago/Dev/d3.v3/d3.v3.js"></script>
+    <script type="text/javascript" src="http://foocoop.mx:3700/socket.io/socket.io.js"></script>
+    <style type="text/css">
+    	#graph, #stream, #info, .stream-message, #title-bar, #first-column, #stream-input-form-button {
+        	background-color: #DDDDDD;
+        	border-color: #ACACAC;
+    	}
+        circle.node{
+            stroke-width: 1px;
+            stroke: black;
+            fill: black;
+        }
+        circle.selectedNet, circle.selectedPrototype{
+        	stroke-width: 5px;
+            stroke: black;
+            fill: none;
+        }
+        circle.receiver{
+        	stroke-width: 5px;
+        	stroke: black;
+        	fill: none;	
+        }
+        text.node{
+            font-family: sans-serif;
+            font-size: 15px;
+            text-anchor: middle;
+            alignment-baseline: central;
+            fill: white;
+        }
+        text.receiver{
+            font-family: sans-serif;
+            font-size: 15px;
+            text-anchor: middle;
+            alignment-baseline: central;
+            fill: black;
+        }
+        line.node{
+            stroke-width: 5px;
+            stroke: black;
+        }
+        line.message{
+            stroke-width: 5px;
+            stroke: #DD1111;
+            stroke-dasharray: 1,10;
+            stroke-linecap: round;
+        }
+        #first-column{
+        	width: 66%;
+        	float: left;
+        }
+        #title-bar{
+        	width: 100%;
+        	text-align: center;
+        	padding-top: 24px;
+        	padding-bottom: 0px;
+        }
+        #graph{
+        	width: 100%;
+        	border-style: solid;
+        	border-width: 0px;
+        	border-top-width: 1px;
+        }
+        #stream{
+        	width: 32%;
+        	margin-left: 0px;
+        	float: left;
+        	position: relative;
+        	border-style: solid;
+        	border-width: 0px;
+        	border-left-width: 1px;
+        }
+        #info{
+        	width: 74%;
+        	float: left;
+        	border-color: black;
+        	border-style: solid;
+        }
+        #stream-messages{
+        	width: 100%;
+        }
+        #stream-input{
+        	width: 100%;
+        	padding-top: 40px;
+        	padding-bottom: 20px;
+        }
+        #stream-input-row{
+        	width: 100%;
+        	background-color: black;
+        	font-size: 12pt;
+        	font-weight: normal;
+        	vertical-align: top;
+        	color: white;
+        }
+        #stream-input-form-name, #stream-input-form-message{
+        	background: black;
+        	border-width: 0px;
+        	color: white;
+        	resize: none;
+        }
+        #stream-input-form-button{
+        	border-style: none;
+        	margin-bottom: -1px;
+        }
+        div.stream-message{
+        	padding-left: 8px;
+        	padding-right: 8px;
+        	padding-top: 5px;
+        	padding-bottom: 5px;
+        	border-bottom-color: #ACACAC;
+        	border-bottom-width: 1px;
+        	border-bottom-style: solid;
+        }
+        p.message-user{
+        	position: relative;
+        	float: left;
+        	font-size: 20pt;
+        	font-weight: bold;
+        	margin-top: 0px;
+        	margin-bottom: 0px;
+        }
+        p.message-time{
+        	position: relative;
+        	float: right;
+			font-size: 10pt;
+        	font-weight: bold;
+        	margin-top: 0px;
+        	margin-bottom: 0px;
+        }
+        p.message-text{
+			clear: both;
+			font-size: 12pt;
+        	font-weight: normal;
+        	margin-top: 0px;
+        	margin-bottom: 0px;
+        }
+    </style>
+</head>
+<iframe name="form-target" width="0" height="0" seamless="seamless"></iframe>
+<body style="background-color: #FFFFFF">
+    <div id="first-column">
+	    <div id="title-bar">
+    		<img src="aeLabLogo.png" width=50%>
+    	</div>
+    	<div id="graph"></div>
+    </div>
+    <div id="stream">
+    	<div id="stream-input">
+    		<form id="stream-input-form" onSubmit="return handleForm()" method="post" target="form-target">
+    			<div id="stream-input-row">
+					Nombre:<input type="text" id="stream-input-form-name">
+				</div>
+				<div style="padding-bottom:4px"></div>
+				<div id="stream-input-row">
+					Mensaje:<textarea id="stream-input-form-message"></textarea>
+				</div>
+				<div id="stream-input-row" align="right">
+					<input type="submit" value="Enviar" id="stream-input-form-button">
+				</div>
+			</form>
+    	</div>
+        <div id="stream-messages"></div>
+    </div>
+
+    <script type="text/javascript">
+
+    // my name
+    var receiverName = "http"; // (or internet) and freeNet... 
+
+    // start socket connection
+    var socket = io.connect('http://foocoop.mx:3700/frontEnd');
+    // register events
+    socket.on('addMessage', onAddMessage);
+    socket.on('addLocalNet', onAddLocalNet);
+    socket.on('addPrototype', onAddPrototype);
+
+    // TODO: initial query of messages to display
+
+	var nets = [{name: "MOLAA",
+				location: {city:"Long Beach", state:"CA", country:"USA", coordinates:[33.7669, -118.1883]},
+				description: "MOLAA blah blah blah",
+				image: "http://i.imgur.com/OV5JNjB.jpg",
+				active: true,
+				rcvrs: [{name:"sms"},
+				 		{name:"twitter"},
+				 		{name:"freenet"},
+				 		{name:"http"}],
+				_prots: [{name: "AST",
+						address: ["192.168.23.12",4555],
+						description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
+    					{name: "CAU",
+    					address: ["192.168.23.15",4555],
+    					description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
+			    		{name: "ISO",
+			    		address: ["192.168.23.18",4555],
+			    		description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
+			    		{name: "VLE",
+			    		address: ["192.168.23.20",4555],
+			    		description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true}]
+				},
+				{name: "SESC",
+				location: {city:"São Paulo", state:"SP", country:"Brazil", coordinates:[-23.5000, -46.6167]},
+				description: "SP blah blah blah",
+				image: "http://i.imgur.com/OV5JNjB.jpg",
+				active: true,
+				rcvrs: [{name:"sms"},
+				 		{name:"twitter"},
+				 		{name:"freenet"},
+				 		{name:"http"}],
+				_prots: [{name: "AST",
+						address: ["192.168.2.2",4555],
+						description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
+						{name: "AST",
+						address: ["192.168.2.2",4444],
+						description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
+			    		{name: "ISO",
+			    		address: ["192.168.2.2",4599],
+			    		description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true}]
+				},
+				{name: "Five42",
+				location: {city:"Oakland", state:"CA", country:"USA", coordinates:[37.8044, -122.2697]},
+				description: "542 blah blah blah",
+				image: "http://i.imgur.com/OV5JNjB.jpg",
+				active: false,
+				rcvrs: [{name:"sms"},
+				 		{name:"twitter"},
+				 		{name:"freenet"},
+				 		{name:"http"}],
+				_prots: [{name: "ProcessingTest",
+						address: ["localhost",9000],
+						description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
+						{name: "AST",
+						address: ["192.168.2.2",4555],
+						description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
+    					{name: "CAU",
+    					address: ["192.168.2.20",4556],
+    					description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
+			    		{name: "ISO",
+			    		address: ["192.168.2.30",4588],
+			    		description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true},
+			    		{name: "VLE",
+			    		address: ["192.168.2.2",4556],
+			    		description: "ohh lalalala",
+						image: "http://i.imgur.com/OV5JNjB.jpg",
+						active: true}]
+				}];
+
+	nets = [];
+	var rcvrs = [];
+	var msgs = [];
+
+    function handleForm(){
+    	if(document.getElementById("stream-input-form-message").value=='')
+    		return;
+
+    	function addZero(n){
+    		return ((n<10)?'0':'')+n;
+    	}
+    	function getDateTime(epochSecs){
+    		var now = new Date(0);
+    		now.setUTCSeconds(epochSecs);
+    		return now.getFullYear()+"-"+
+    			   addZero(now.getMonth()+1)+"-"+
+    			   addZero(now.getDate())+" "+
+    			   addZero(now.getHours())+":"+
+    			   addZero(now.getMinutes())+":"+
+    			   addZero(now.getSeconds());
+    	}
+    	var newMessage = {epoch:(new Date).getTime()/1000,
+				  		  messageText:document.getElementById("stream-input-form-message").value,
+				  		  user:document.getElementById("stream-input-form-name").value,
+				  		  localNetName:(selectedNet!=null?selectedNet.name:""),
+				  		  localNetLocation:(selectedNet!=null?selectedNet.location:""),				  		  
+				  		  receiver:receiverName,
+				  		  prototypeAddress:(selectedPrototype!=null?selectedPrototype.address:"")};
+
+		// DEBUG: for testing only
+		newMessage.location = newMessage.localNetLocation;
+		onAddMessage(newMessage);
+
+		socket.emit('addMessage', newMessage);
+
+		stream.selectAll("div").remove();
+		var streamMsgs = stream.selectAll("div")
+    		.data(msgs)
+    		.enter().append("div")
+    		.attr("class","stream-message");
+    	streamMsgs.append("p")
+    		.attr("class","message-user")
+    		.text(function(d){return d.user;});
+    	streamMsgs.append("p")
+    		.attr("class","message-time")
+    		.text(function(d){return getDateTime(d.epoch);});
+    	streamMsgs.append("p")
+    		.attr("class","message-text")
+    		.text(function(d){return d.messageText;});
+    	document.getElementById("stream-input-form-message").value='';
+    	return false;
+    }
+
+	var nodes = [],
+		links = [];
+
+	var selectedNet = null,
+		selectedPrototype = null;
+
+    var graphSVG = d3.select("#graph")
+        .append("svg")
+        .attr("width", document.getElementById("graph").offsetWidth)
+        .attr("height", 500);
+
+    window.onload = function(){
+		d3.select("#stream")
+			.style("height",document.getElementById("first-column").offsetHeight+"px");
+
+		updateGraphArrays();
+		updateReceivers();
+		updateGraphSVG();
+    }
+
+	var stream = d3.select("#stream-messages");
+
+    var theForce = d3.layout.force();
+	theForce.nodes(nodes.concat(rcvrs))
+		.links(links)
+		.linkDistance(200)
+		.charge(-800)
+		.size([graphSVG.attr("width"),graphSVG.attr("height")])
+		.on("tick",tick)
+		.start();
+
+	window.onresize = function(event) {
+		d3.select("#stream")
+			.style("height",document.getElementById("first-column").offsetHeight+"px");
+
+		graphSVG.attr("width",document.getElementById("graph").offsetWidth);
+		theForce.size([graphSVG.attr("width"),graphSVG.attr("height")]).start();
+	};
+
+	// d3 graph tick function
+	function tick(){
+		graphSVG.selectAll("line.node")
+			.attr("x1", function(d){return d.source.x;})
+			.attr("y1", function(d){return d.source.y;})
+			.attr("x2", function(d){return d.target.x;})
+			.attr("y2", function(d){return d.target.y;});
+		graphSVG.selectAll("circle.node")
+			.attr("cx", function(d){return d.x;})
+			.attr("cy", function(d){return d.y;})
+			.attr("r", function(d){return ("_prots" in d)?((d.prots != null)?50:40):30});
+		graphSVG.selectAll("text.node")
+			.attr("x",function(d){return d.x;})
+			.attr("y",function(d){return d.y;});
+		graphSVG.selectAll("circle.receiver")
+			.attr("cx", function(d){return d.x;})
+			.attr("cy", function(d){return d.y;})
+			.attr("r", function(d){return 30});
+		graphSVG.selectAll("text.receiver")
+			.attr("x",function(d){return d.x;})
+			.attr("y",function(d){return d.y;});
+		if(selectedNet){
+			graphSVG.selectAll("circle.selectedNet")
+				.attr("cx",selectedNet.x)
+				.attr("cy",selectedNet.y)
+				.attr("r",60);
+		}
+		if(selectedPrototype){
+			graphSVG.selectAll("circle.selectedPrototype")
+				.attr("cx",selectedPrototype.x)
+				.attr("cy",selectedPrototype.y)
+				.attr("r",40);
+		}
+	}
+
+	// get list of receivers from net info
+	function updateReceivers(){
+		var tmp_rcvrs = [];
+		for(var n in nets){
+			for(var r in nets[n].rcvrs){
+				tmp_rcvrs[nets[n].rcvrs[r].name] = nets[n].rcvrs[r].name;
+			}
+		}
+		rcvrs = [];
+		for(var r in tmp_rcvrs){
+			rcvrs.push({name:r});
+		}
+	}
+
+	function updateGraphArrays() {
+		nodes = []; 
+		links = [];
+		for (var n in nets){
+			var s = nodes.length;
+			nodes.push(nets[n]);
+			for (var p in nets[n].prots){
+				var t = nodes.length;
+				nodes.push(nets[n].prots[p]);
+				links.push({source:s, target:t});
+			}
+		}
+	}
+
+	function updateGraphSVG() {
+		graphSVG.selectAll("line.node").remove();
+		graphSVG.selectAll("g").remove();
+		graphSVG.selectAll("line.node")
+			.data(links)
+			.enter().append("svg:line")
+			.attr("class", "node");
+		var ngs = graphSVG.selectAll("circle.node")
+			.data(nodes)
+			.enter().append("g")
+			.on("click", nodeClick);
+		ngs.append("svg:circle")
+			.attr("class", "node")
+		ngs.append("text")
+			.attr("class", "node")
+			.text(function(d){return d.name;});
+		var rgs = graphSVG.selectAll("circle.receiver")
+			.data(rcvrs)
+			.enter().append("g");
+		rgs.append("svg:circle")
+			.attr("class", "receiver")
+		rgs.append("text")
+			.attr("class", "receiver")
+			.text(function(d){return d.name;});
+	}
+
+	function nodeClick(n){
+		// clicked a net
+		if("_prots" in n){
+			// things that always get updated
+			selectedPrototype = null;
+			graphSVG.selectAll("circle.selectedPrototype").remove();
+			graphSVG.selectAll("circle.selectedNet").remove();
+
+			// close what's open
+			if(selectedNet){
+				selectedNet._prots = selectedNet.prots;
+				selectedNet.prots = null;
+			}
+
+			// if only closing, de-select node
+			if(n == selectedNet){
+				selectedNet = null;
+			}
+			// else open new
+			else{
+				graphSVG.append("circle")
+					.attr("class","selectedNet");
+				selectedNet = n;
+				selectedNet.prots = selectedNet._prots;
+				selectedNet._prots = null;
+			}
+		}
+		// clicked a prototypes
+		else{
+			// if already selected, de-select node
+			selectedPrototype = (n == selectedPrototype)?null:n;
+			if(selectedPrototype){
+				graphSVG.append("circle")
+					.attr("class","selectedPrototype");
+			}
+			else{
+				graphSVG.selectAll("circle.selectedPrototype").remove();
+			}
+		}
+
+		// update node arrays
+		updateGraphArrays();
+		// update svg
+		updateGraphSVG();
+		// update graph
+		theForce.nodes(nodes.concat(rcvrs))
+			.links(links)
+			.start();
+	}
+
+	function onAddPrototype(data){
+		console.log("from onAddPrototype");
+		for (n in nets){
+			if((data.localNet.location.coordinates) && (data.localNet.name) && 
+			   (data.name == nets[n].name) && 
+			   (data.localNet.location.coordinates[0] == nets[n].location.coordinates[0]) && 
+			   (data.localNet.location.coordinates[1] == nets[n].location.coordinates[1])){
+				var newProt = {name:data.prototype.name,
+							   address:data.prototype.address,
+							   description:data.prototype.description,
+							   image:data.prototype.image,
+							   active:data.prototype.active};
+				// check if this is the net being displayed
+				if(nets[n].prots != null){
+					nets[n].prots.push(newProt);
+				}
+				else if(nets[n]._prots != null){
+					nets[n]._prots.push(newProt);
+				}
+			}
+		}
+
+		// update node arrays
+		updateGraphArrays();
+		// update svg
+		updateGraphSVG();
+		// update graph
+		theForce.nodes(nodes.concat(rcvrs))
+			.links(links)
+			.start();
+	}
+
+	function onAddLocalNet(data){
+		console.log("from onAddLocalNet");
+		console.log(data);
+		var newNet = {name:data.name,
+					  location:data.location,
+					  description:data.description,
+					  image:data.image,
+					  active:data.active,
+					  rcvrs: data.rcvrs,
+					  _prots:[]};
+		nets.push(newNet);
+		// update node arrays
+		updateGraphArrays();
+		// update receivers
+		updateReceivers();
+		// update svg
+		updateGraphSVG();
+		// update graph
+		theForce.nodes(nodes.concat(rcvrs))
+			.links(links)
+			.start();
+	}
+
+	// these are messages that come from 
+	//     receiver->localNet->server->frontEnd
+	function onAddMessage(data){
+		// get info from data json
+		var newMessage = {epoch:data.epoch,
+				  		  messageText:data.messageText,
+				  		  user:data.user,
+				  		  localNetName:data.localNetName,
+				  		  localNetLocation:data.localNetLocation,
+				  		  receiver:data.receiver,
+				  		  prototypeAddress:data.prototypeAddress};
+		// shove in message array
+		msgs.unshift(newMessage);
+		// TODO: update stream? re-query?
+
+		// animation
+		var node0 = null;
+		for(r in rcvrs){
+			if(rcvrs[r].name == data.receiver){
+				node0 = rcvrs[r];
+			}
+		}
+		var node1 = [];
+		if((selectedNet) && (data.localNetName == selectedNet.name) &&
+		   (data.location.coordinates[0] == selectedNet.location.coordinates[0]) &&
+		   (data.location.coordinates[1] == selectedNet.location.coordinates[1])){
+			for(p in nodes){
+				if((nodes[p].address) && 
+					(((nodes[p].address[0] == data.prototypeAddress[0]) && 
+					(nodes[p].address[1] == data.prototypeAddress[1])) ||
+					(data.prototypeAddress == ""))){
+					node1.push(nodes[p]);
+				}
+			}
+		}
+		else{
+			for(p in nodes){
+				if((nodes[p].name) && 
+					((data.localNetName == nodes[p].name) || (data.localNetName == ""))){
+					node1.push(nodes[p]);
+				}
+			}
+		}
+		console.log("node0");
+		console.log(node0);
+		console.log("node1");
+		console.log(node1);
+		var msgLinks = [];
+		for(t in node1){
+			msgLinks.push({source:node0, target:node1[t]});
+		}
+		// put some lines in svg graph
+		graphSVG.selectAll("line.message")
+			.data(msgLinks)
+			.enter().insert("svg:line",":first-child")
+			.attr("class", "message")
+			.attr("x1", function(d){return d.source.x;})
+			.attr("y1", function(d){return d.source.y;})
+			.attr("x2", function(d){return d.source.x;})
+			.attr("y2", function(d){return d.source.y;})
+			.transition()
+			.attr("x2", function(d){return d.target.x;})
+			.attr("y2", function(d){return d.target.y;})
+			.duration(1000)
+			.each("end",function() {
+				d3.select(this)
+					.transition()
+					.attr("x1", function(d){return d.target.x;})
+					.attr("y1", function(d){return d.target.y;})
+					.duration(1000)
+					.each("end",function(){
+						graphSVG.selectAll("line.message").remove();
+					});
+			});
+	}
+
+    </script>
+</body>
+</html>
